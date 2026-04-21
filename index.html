@@ -4,34 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Checador Pro</title>
-    <script src="https://unpkg.com" type="text/javascript"></script>
+    <!-- Fuente 1: Cloudflare (Muy rápida) -->
+    <script src="https://cloudflare.com"></script>
     <style>
         body { font-family: sans-serif; background: #f4f4f9; display: flex; flex-direction: column; align-items: center; padding: 15px; margin: 0; }
         .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); width: 100%; max-width: 400px; margin-bottom: 15px; text-align: center; box-sizing: border-box; }
         #reader { width: 100%; border-radius: 8px; background: #000; display: none; margin-bottom: 10px; }
-        
-        .result-box { 
-            margin-top: 15px; 
-            padding: 25px; 
-            background: #fff; 
-            border: 2px solid #eee;
-            border-radius: 12px; 
-            min-height: 150px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-        }
-        
+        .result-box { margin-top: 15px; padding: 25px; background: #fff; border: 2px solid #eee; border-radius: 12px; min-height: 150px; display: flex; flex-direction: column; justify-content: center; align-items: center; }
         .precio-grande { color: #28a745; font-size: 3.5rem; font-weight: bold; margin: 5px 0; }
         .nombre-grande { font-size: 1.6rem; color: #333; font-weight: bold; text-transform: uppercase; }
         .codigo-texto { color: #888; font-size: 0.9rem; margin-top: 10px; }
-
         button { background: #007bff; color: white; border: none; padding: 15px; border-radius: 8px; cursor: pointer; width: 100%; font-weight: bold; font-size: 1.1rem; }
         input { width: 100%; padding: 12px; margin: 5px 0; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; }
-        
-        /* ID para controlar la visibilidad del registro */
-        #panelRegistro { transition: all 0.3s ease; }
     </style>
 </head>
 <body>
@@ -40,13 +24,11 @@
         <h2>Verificador de Precios</h2>
         <button id="btnStart" onclick="encender()">Encender Cámara</button>
         <div id="reader"></div>
-        
         <div class="result-box" id="result-box">
-            <p style="color:#666;">Presiona el botón para consultar un precio</p>
+            <p id="statusTxt" style="color:#666;">Sistema listo</p>
         </div>
     </div>
 
-    <!-- Añadimos el ID panelRegistro aquí -->
     <div class="card" id="panelRegistro">
         <h3>Panel de Registro</h3>
         <input type="text" id="newCode" placeholder="Código escaneado">
@@ -59,9 +41,17 @@
         let productos = JSON.parse(localStorage.getItem('misProductos')) || {};
         let scanner = null;
 
-        function encender() {
+        // Intentar cargar fuente de respaldo si la primera falla
+        if (typeof Html5Qrcode === "undefined") {
+            const fallback = document.createElement('script');
+            fallback.src = "https://unpkg.com";
+            document.head.appendChild(fallback);
+        }
+
+        async function encender() {
+            // Verificación de seguridad
             if (typeof Html5Qrcode === "undefined") {
-                alert("Cargando sistema...");
+                alert("El sistema aún está conectando a internet. Espera 5 segundos.");
                 return;
             }
 
@@ -73,22 +63,24 @@
             readerDiv.style.display = 'block';
             resultBox.innerHTML = "Buscando producto...";
 
-            scanner = new Html5Qrcode("reader");
-            
-            const config = { fps: 10, qrbox: { width: 250, height: 150 }, aspectRatio: 1.0 };
+            try {
+                if (!scanner) scanner = new Html5Qrcode("reader");
+                
+                const config = { fps: 10, qrbox: { width: 250, height: 150 }, aspectRatio: 1.0 };
 
-            scanner.start({ facingMode: "environment" }, config, (text) => {
-                scanner.stop().then(() => {
-                    readerDiv.style.display = 'none';
-                    btnStart.style.display = 'block'; 
-                    btnStart.innerText = "Consultar otro";
-                    mostrar(text);
+                await scanner.start({ facingMode: "environment" }, config, (text) => {
+                    scanner.stop().then(() => {
+                        readerDiv.style.display = 'none';
+                        btnStart.style.display = 'block'; 
+                        btnStart.innerText = "Consultar otro";
+                        mostrar(text);
+                    });
+                    if (navigator.vibrate) navigator.vibrate(100);
                 });
-                if (navigator.vibrate) navigator.vibrate(100);
-            }).catch(err => {
-                alert("Error: " + err);
+            } catch (err) {
+                alert("Error de cámara: " + err);
                 btnStart.style.display = 'block';
-            });
+            }
         }
 
         function mostrar(codigo) {
@@ -97,7 +89,6 @@
             const p = productos[codigo];
             
             if (p) {
-                // PRODUCTO ENCONTRADO: Ocultar registro
                 panelRegistro.style.display = 'none';
                 box.innerHTML = `
                     <div class="nombre-grande">${p.nombre}</div>
@@ -105,12 +96,11 @@
                     <div class="codigo-texto">SKU: ${codigo}</div>
                 `;
             } else {
-                // PRODUCTO NO ENCONTRADO: Mostrar registro
                 panelRegistro.style.display = 'block';
                 box.innerHTML = `
                     <div style="color:#d9534f; font-weight:bold; font-size: 1.2rem;">PRODUCTO NUEVO</div>
                     <div class="codigo-texto">Código detectado: ${codigo}</div>
-                    <button onclick="formPre('${codigo}')" style="background:#6c757d; padding:10px; margin-top:15px; font-size:0.9rem;">Registrar Producto</button>
+                    <button onclick="formPre('${codigo}')" style="background:#6c757d; padding:10px; margin-top:15px; font-size:0.9rem; width:auto;">Registrar Producto</button>
                 `;
             }
         }
@@ -132,6 +122,9 @@
                 document.getElementById('newCode').value = '';
                 document.getElementById('newName').value = '';
                 document.getElementById('newPrice').value = '';
+                // Al guardar, podemos ocultar el panel si queremos que se vea el resultado
+                document.getElementById('panelRegistro').style.display = 'none';
+                mostrar(c); 
             }
         }
     </script>
