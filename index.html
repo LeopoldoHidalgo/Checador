@@ -3,89 +3,124 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Checador Pro</title>
-    <!-- Usamos una fuente de la librería más estable -->
-    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+    <title>Checador Automático</title>
+    <script src="https://unpkg.com" type="text/javascript"></script>
     <style>
-        body { font-family: sans-serif; background: #f4f4f9; display: flex; flex-direction: column; align-items: center; padding: 15px; margin: 0; }
-        .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); width: 100%; max-width: 400px; margin-bottom: 15px; text-align: center; box-sizing: border-box; }
-        #reader { width: 100%; border-radius: 8px; background: #000; display: none; }
-        .result-box { margin-top: 15px; padding: 15px; background: #eee; border-radius: 8px; min-height: 60px; }
-        button { background: #007bff; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; width: 100%; font-weight: bold; }
-        input { width: 100%; padding: 10px; margin: 5px 0; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f0f2f5; display: flex; flex-direction: column; align-items: center; padding: 15px; margin: 0; }
+        .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 100%; max-width: 400px; margin-bottom: 15px; text-align: center; box-sizing: border-box; }
+        #reader { width: 100%; border-radius: 10px; overflow: hidden; background: #000; display: none; }
+        .result-box { margin-top: 10px; min-height: 100px; display: flex; flex-direction: column; justify-content: center; align-items: center; background: #fff; border-radius: 10px; }
+        .price { font-size: 3rem; color: #28a745; font-weight: bold; margin: 10px 0; }
+        .product-name { font-size: 1.5rem; color: #333; font-weight: bold; }
+        button { background: #007bff; color: white; border: none; padding: 15px; border-radius: 10px; cursor: pointer; width: 100%; font-size: 1rem; font-weight: bold; }
+        input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; }
+        .status-text { color: #666; font-size: 0.9rem; margin-top: 10px; }
     </style>
 </head>
 <body>
 
     <div class="card">
-        <h2>Verificador de Precios</h2>
+        <h2>Checador de Precios</h2>
         <button id="btnStart" onclick="encender()">Encender Cámara</button>
+        
         <div id="reader"></div>
-        <div class="result-box" id="result-box">Listo para escanear</div>
+        
+        <div class="result-box" id="result-box">
+            <p class="status-text">Listo para escanear</p>
+        </div>
     </div>
 
     <div class="card">
         <h3>Registrar Producto</h3>
-        <input type="text" id="newCode" placeholder="Código">
+        <input type="text" id="newCode" placeholder="Código de barras">
         <input type="text" id="newName" placeholder="Nombre del producto">
-        <input type="text" id="newPrice" placeholder="Precio (ej: 25.00)">
-        <button onclick="guardar()" style="background:#28a745; margin-top:10px;">Guardar en Base de Datos</button>
+        <input type="text" id="newPrice" placeholder="Precio (ej: 25.50)">
+        <button onclick="guardar()" style="background:#28a745;">Guardar Producto</button>
     </div>
 
     <script>
         let productos = JSON.parse(localStorage.getItem('misProductos')) || {};
         let scanner = null;
 
-        function encender() {
-            // Verificamos si la librería cargó correctamente
+        async function encender() {
             if (typeof Html5Qrcode === "undefined") {
-                alert("La librería aún no carga. Espera 2 segundos y reintenta.");
+                alert("Cargando librería... reintenta en un momento.");
                 return;
             }
 
-            document.getElementById('btnStart').style.display = 'none';
-            document.getElementById('reader').style.display = 'block';
-            
-            scanner = new Html5Qrcode("reader");
-            
-            const config = { fps: 10, qrbox: { width: 250, height: 150 } };
+            const btnStart = document.getElementById('btnStart');
+            const readerDiv = document.getElementById('reader');
+            const resultBox = document.getElementById('result-box');
 
-            scanner.start({ facingMode: "environment" }, config, (text) => {
-                mostrar(text);
-                if (navigator.vibrate) navigator.vibrate(100);
-            }).catch(err => {
-                alert("Error de cámara: " + err);
-                document.getElementById('btnStart').style.display = 'block';
-            });
-        }
+            btnStart.style.display = 'none';
+            readerDiv.style.display = 'block';
+            resultBox.innerHTML = '<p class="status-text">Buscando código...</p>';
 
-        function mostrar(codigo) {
-            const box = document.getElementById('result-box');
-            const p = productos[codigo];
-            if (p) {
-                box.innerHTML = `<strong>${p.nombre}</strong><br><span style="color:green; font-size:1.5em;">$${p.price}</span>`;
-            } else {
-                box.innerHTML = `No registrado: ${codigo} <br> <button onclick="formPre('${codigo}')" style="padding:4px; margin-top:5px;">Registrar</button>`;
+            if (!scanner) scanner = new Html5Qrcode("reader");
+
+            const config = { fps: 10, qrbox: { width: 280, height: 150 } };
+
+            try {
+                await scanner.start({ facingMode: "environment" }, config, (decodedText) => {
+                    // 1. Al detectar, detenemos cámara y procesamos
+                    scanner.stop().then(() => {
+                        readerDiv.style.display = 'none';
+                        mostrarProducto(decodedText);
+                    });
+                    
+                    if (navigator.vibrate) navigator.vibrate(100);
+                });
+            } catch (err) {
+                console.error(err);
+                resultBox.innerHTML = `<p style="color:red">Error: ${err}</p>`;
+                btnStart.style.display = 'block';
             }
         }
 
-        function formPre(c) {
+        function mostrarProducto(codigo) {
+            const box = document.getElementById('result-box');
+            const p = productos[codigo];
+
+            if (p) {
+                box.innerHTML = `
+                    <div class="product-name">${p.nombre}</div>
+                    <div class="price">$${p.precio}</div>
+                    <div class="status-text">Reactivando cámara en 5s...</div>
+                `;
+            } else {
+                box.innerHTML = `
+                    <div style="color:orange; font-weight:bold;">CÓDIGO: ${codigo}</div>
+                    <p>No registrado</p>
+                    <button onclick="prellenar('${codigo}')" style="background:#6c757d; padding:8px; width:auto;">Registrar</button>
+                    <div class="status-text">Reactivando cámara en 5s...</div>
+                `;
+            }
+
+            // 2. Temporizador de 5 segundos para reactivar la cámara
+            setTimeout(() => {
+                encender();
+            }, 5000);
+        }
+
+        function prellenar(c) {
             document.getElementById('newCode').value = c;
             document.getElementById('newName').focus();
         }
 
         function guardar() {
-            const c = document.getElementById('newCode').value;
-            const n = document.getElementById('newName').value;
-            const p = document.getElementById('newPrice').value;
+            const c = document.getElementById('newCode').value.trim();
+            const n = document.getElementById('newName').value.trim();
+            const p = document.getElementById('newPrice').value.trim();
 
-            if(c && n && p) {
-                productos[c] = { nombre: n, price: p };
+            if (c && n && p) {
+                productos[c] = { nombre: n, precio: p };
                 localStorage.setItem('misProductos', JSON.stringify(productos));
-                alert("¡Guardado!");
+                alert("¡Producto guardado!");
                 document.getElementById('newCode').value = '';
                 document.getElementById('newName').value = '';
                 document.getElementById('newPrice').value = '';
+            } else {
+                alert("Por favor llena todos los campos.");
             }
         }
     </script>
