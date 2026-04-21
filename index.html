@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Checador Pro</title>
-    <!-- Librería original que te funcionó -->
     <script src="https://unpkg.com" type="text/javascript"></script>
     <style>
         body { font-family: sans-serif; background: #f4f4f9; display: flex; flex-direction: column; align-items: center; padding: 15px; margin: 0; }
@@ -15,8 +14,6 @@
         input { width: 100%; padding: 10px; margin: 5px 0; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
         .precio-grande { color: #28a745; font-size: 2.5rem; font-weight: bold; margin: 5px 0; }
         .nombre-grande { font-size: 1.3rem; font-weight: bold; color: #333; }
-
-        /* EL PANEL INICIA OCULTO SIEMPRE */
         #panelRegistro { display: none; }
     </style>
 </head>
@@ -29,13 +26,12 @@
         <div class="result-box" id="result-box">Listo para escanear</div>
     </div>
 
-    <!-- Panel de Registro -->
     <div class="card" id="panelRegistro">
         <h3>Registrar Producto</h3>
         <input type="text" id="newCode" placeholder="Código">
         <input type="text" id="newName" placeholder="Nombre del producto">
-        <input type="text" id="newPrice" placeholder="Precio (ej: 25.00)">
-        <button onclick="guardar()" style="background:#28a745; margin-top:10px;">Guardar en Base de Datos</button>
+        <input type="text" id="newPrice" placeholder="Precio">
+        <button onclick="guardar()" style="background:#28a745; margin-top:10px;">Guardar</button>
     </div>
 
     <script>
@@ -43,8 +39,10 @@
         let scanner = null;
 
         function encender() {
+            // Si la librería no ha cargado, esperamos 500ms y reintentamos automáticamente
             if (typeof Html5Qrcode === "undefined") {
-                alert("La librería aún no carga. Espera unos segundos y reintenta.");
+                console.log("Reintentando carga...");
+                setTimeout(encender, 500); 
                 return;
             }
 
@@ -74,15 +72,9 @@
             const p = productos[codigo];
 
             if (p) {
-                // Si el producto existe, ocultamos el panel de registro
                 panel.style.display = 'none';
-                box.innerHTML = `
-                    <div class="nombre-grande">${p.nombre}</div>
-                    <div class="precio-grande">$${p.price}</div>
-                    <small>Código: ${codigo}</small>
-                `;
+                box.innerHTML = `<div class="nombre-grande">${p.nombre}</div><div class="precio-grande">$${p.price}</div>`;
             } else {
-                // Si no existe, mostramos el panel de registro y llenamos el código
                 panel.style.display = 'block';
                 box.innerHTML = `No registrado: ${codigo}`;
                 document.getElementById('newCode').value = codigo;
@@ -93,16 +85,10 @@
             const c = document.getElementById('newCode').value;
             const n = document.getElementById('newName').value;
             const p = document.getElementById('newPrice').value;
-
             if(c && n && p) {
                 productos[c] = { nombre: n, price: p };
                 localStorage.setItem('misProductos', JSON.stringify(productos));
-                alert("¡Guardado!");
-                // Ocultar panel y limpiar campos después de guardar
                 document.getElementById('panelRegistro').style.display = 'none';
-                document.getElementById('newCode').value = '';
-                document.getElementById('newName').value = '';
-                document.getElementById('newPrice').value = '';
                 mostrar(c);
             }
         }
