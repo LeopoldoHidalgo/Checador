@@ -97,6 +97,15 @@
                     <div style="color:red; font-weight:bold;">No registrado</div>
                     <div style="margin:10px 0;">Código: ${codigo}</div>
                     <button onclick="formPre('${codigo}')" style="background:#6c757d; padding:8px; font-size:0.9rem;">Registrar ahora</button>
+
+    <div class="card">
+        <h3>Registrar Producto</h3>
+        <input type="text" id="newCode" placeholder="Código">
+        <input type="text" id="newName" placeholder="Nombre del producto">
+        <input type="text" id="newPrice" placeholder="Precio (ej: 25.00)">
+        <button onclick="guardar()" style="background:#28a745; margin-top:10px;">Guardar Producto</button>
+    </div>
+
                 `;
             }
         }
