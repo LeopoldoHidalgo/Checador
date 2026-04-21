@@ -4,14 +4,30 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Checador Pro</title>
-    <!-- Usamos una fuente de la librería más estable -->
-    <script src="https://unpkg.com" type="text/javascript"></script>
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
     <style>
         body { font-family: sans-serif; background: #f4f4f9; display: flex; flex-direction: column; align-items: center; padding: 15px; margin: 0; }
         .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); width: 100%; max-width: 400px; margin-bottom: 15px; text-align: center; box-sizing: border-box; }
         #reader { width: 100%; border-radius: 8px; background: #000; display: none; }
-        .result-box { margin-top: 15px; padding: 15px; background: #eee; border-radius: 8px; min-height: 60px; }
-        button { background: #007bff; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; width: 100%; font-weight: bold; }
+        
+        /* Estilo para que los datos resalten en el centro */
+        .result-box { 
+            margin-top: 15px; 
+            padding: 25px; 
+            background: #fff; 
+            border: 2px solid #eee;
+            border-radius: 12px; 
+            min-height: 120px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .precio-grande { color: #28a745; font-size: 3rem; font-weight: bold; margin: 10px 0; }
+        .nombre-grande { font-size: 1.5rem; color: #333; font-weight: bold; }
+
+        button { background: #007bff; color: white; border: none; padding: 15px; border-radius: 8px; cursor: pointer; width: 100%; font-weight: bold; font-size: 1.1rem; }
         input { width: 100%; padding: 10px; margin: 5px 0; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
     </style>
 </head>
@@ -21,7 +37,9 @@
         <h2>Verificador de Precios</h2>
         <button id="btnStart" onclick="encender()">Encender Cámara</button>
         <div id="reader"></div>
-        <div class="result-box" id="result-box">Listo para escanear</div>
+        <div class="result-box" id="result-box">
+            <p>Presiona el botón para escanear</p>
+        </div>
     </div>
 
     <div class="card">
@@ -29,7 +47,7 @@
         <input type="text" id="newCode" placeholder="Código">
         <input type="text" id="newName" placeholder="Nombre del producto">
         <input type="text" id="newPrice" placeholder="Precio (ej: 25.00)">
-        <button onclick="guardar()" style="background:#28a745; margin-top:10px;">Guardar en Base de Datos</button>
+        <button onclick="guardar()" style="background:#28a745; margin-top:10px;">Guardar Producto</button>
     </div>
 
     <script>
@@ -37,35 +55,56 @@
         let scanner = null;
 
         function encender() {
-            // Verificamos si la librería cargó correctamente
             if (typeof Html5Qrcode === "undefined") {
-                alert("La librería aún no carga. Espera 2 segundos y reintenta.");
+                alert("La librería aún no carga. Espera 2 segundos.");
                 return;
             }
 
-            document.getElementById('btnStart').style.display = 'none';
-            document.getElementById('reader').style.display = 'block';
-            
+            const btnStart = document.getElementById('btnStart');
+            const readerDiv = document.getElementById('reader');
+            const resultBox = document.getElementById('result-box');
+
+            btnStart.style.display = 'none';
+            readerDiv.style.display = 'block';
+            resultBox.innerHTML = "Buscando...";
+
             scanner = new Html5Qrcode("reader");
             
             const config = { fps: 10, qrbox: { width: 250, height: 150 } };
 
             scanner.start({ facingMode: "environment" }, config, (text) => {
-                mostrar(text);
+                // AL ENCONTRAR: Detenemos cámara y limpiamos
+                scanner.stop().then(() => {
+                    scanner.clear();
+                    readerDiv.style.display = 'none';
+                    btnStart.style.display = 'block'; // Reactivamos el botón
+                    btnStart.innerText = "Escanear otro producto";
+                    mostrar(text);
+                });
+                
                 if (navigator.vibrate) navigator.vibrate(100);
             }).catch(err => {
                 alert("Error de cámara: " + err);
-                document.getElementById('btnStart').style.display = 'block';
+                btnStart.style.display = 'block';
             });
         }
 
         function mostrar(codigo) {
             const box = document.getElementById('result-box');
             const p = productos[codigo];
+            
             if (p) {
-                box.innerHTML = `<strong>${p.nombre}</strong><br><span style="color:green; font-size:1.5em;">$${p.price}</span>`;
+                box.innerHTML = `
+                    <div class="nombre-grande">${p.nombre}</div>
+                    <div class="precio-grande">$${p.price}</div>
+                    <small style="color:gray">Código: ${codigo}</small>
+                `;
             } else {
-                box.innerHTML = `No registrado: ${codigo} <br> <button onclick="formPre('${codigo}')" style="padding:4px; margin-top:5px;">Registrar</button>`;
+                box.innerHTML = `
+                    <div style="color:red; font-weight:bold;">No registrado</div>
+                    <div style="margin:10px 0;">Código: ${codigo}</div>
+                    <button onclick="formPre('${codigo}')" style="background:#6c757d; padding:8px; font-size:0.9rem;">Registrar ahora</button>
+                `;
             }
         }
 
@@ -75,9 +114,9 @@
         }
 
         function guardar() {
-            const c = document.getElementById('newCode').value;
-            const n = document.getElementById('newName').value;
-            const p = document.getElementById('newPrice').value;
+            const c = document.getElementById('newCode').value.trim();
+            const n = document.getElementById('newName').value.trim();
+            const p = document.getElementById('newPrice').value.trim();
 
             if(c && n && p) {
                 productos[c] = { nombre: n, price: p };
