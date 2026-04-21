@@ -4,31 +4,34 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Checador Pro</title>
-    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+    <script src="https://unpkg.com" type="text/javascript"></script>
     <style>
         body { font-family: sans-serif; background: #f4f4f9; display: flex; flex-direction: column; align-items: center; padding: 15px; margin: 0; }
         .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); width: 100%; max-width: 400px; margin-bottom: 15px; text-align: center; box-sizing: border-box; }
-        #reader { width: 100%; border-radius: 8px; background: #000; display: none; }
+        #reader { width: 100%; border-radius: 8px; background: #000; display: none; margin-bottom: 10px; }
         
-        /* Estilo para que los datos resalten en el centro */
         .result-box { 
             margin-top: 15px; 
             padding: 25px; 
             background: #fff; 
             border: 2px solid #eee;
             border-radius: 12px; 
-            min-height: 120px;
+            min-height: 150px;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
         }
         
-        .precio-grande { color: #28a745; font-size: 3rem; font-weight: bold; margin: 10px 0; }
-        .nombre-grande { font-size: 1.5rem; color: #333; font-weight: bold; }
+        .precio-grande { color: #28a745; font-size: 3.5rem; font-weight: bold; margin: 5px 0; }
+        .nombre-grande { font-size: 1.6rem; color: #333; font-weight: bold; text-transform: uppercase; }
+        .codigo-texto { color: #888; font-size: 0.9rem; margin-top: 10px; }
 
         button { background: #007bff; color: white; border: none; padding: 15px; border-radius: 8px; cursor: pointer; width: 100%; font-weight: bold; font-size: 1.1rem; }
-        input { width: 100%; padding: 10px; margin: 5px 0; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
+        input { width: 100%; padding: 12px; margin: 5px 0; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; }
+        
+        /* ID para controlar la visibilidad del registro */
+        #panelRegistro { transition: all 0.3s ease; }
     </style>
 </head>
 <body>
@@ -37,17 +40,19 @@
         <h2>Verificador de Precios</h2>
         <button id="btnStart" onclick="encender()">Encender Cámara</button>
         <div id="reader"></div>
+        
         <div class="result-box" id="result-box">
-            <p>Presiona el botón para escanear</p>
+            <p style="color:#666;">Presiona el botón para consultar un precio</p>
         </div>
     </div>
 
-    <div class="card">
-        <h3>Registrar Producto</h3>
-        <input type="text" id="newCode" placeholder="Código">
+    <!-- Añadimos el ID panelRegistro aquí -->
+    <div class="card" id="panelRegistro">
+        <h3>Panel de Registro</h3>
+        <input type="text" id="newCode" placeholder="Código escaneado">
         <input type="text" id="newName" placeholder="Nombre del producto">
-        <input type="text" id="newPrice" placeholder="Precio (ej: 25.00)">
-        <button onclick="guardar()" style="background:#28a745; margin-top:10px;">Guardar Producto</button>
+        <input type="text" id="newPrice" placeholder="Precio (ej: 45.00)">
+        <button onclick="guardar()" style="background:#28a745; margin-top:10px;">Guardar en Memoria</button>
     </div>
 
     <script>
@@ -56,7 +61,7 @@
 
         function encender() {
             if (typeof Html5Qrcode === "undefined") {
-                alert("La librería aún no carga. Espera 2 segundos.");
+                alert("Cargando sistema...");
                 return;
             }
 
@@ -66,44 +71,46 @@
 
             btnStart.style.display = 'none';
             readerDiv.style.display = 'block';
-            resultBox.innerHTML = "Buscando...";
+            resultBox.innerHTML = "Buscando producto...";
 
             scanner = new Html5Qrcode("reader");
             
-            const config = { fps: 10, qrbox: { width: 250, height: 150 } };
+            const config = { fps: 10, qrbox: { width: 250, height: 150 }, aspectRatio: 1.0 };
 
             scanner.start({ facingMode: "environment" }, config, (text) => {
-                // AL ENCONTRAR: Detenemos cámara y limpiamos
                 scanner.stop().then(() => {
-                    scanner.clear();
                     readerDiv.style.display = 'none';
-                    btnStart.style.display = 'block'; // Reactivamos el botón
-                    btnStart.innerText = "Escanear otro producto";
+                    btnStart.style.display = 'block'; 
+                    btnStart.innerText = "Consultar otro";
                     mostrar(text);
                 });
-                
                 if (navigator.vibrate) navigator.vibrate(100);
             }).catch(err => {
-                alert("Error de cámara: " + err);
+                alert("Error: " + err);
                 btnStart.style.display = 'block';
             });
         }
 
         function mostrar(codigo) {
             const box = document.getElementById('result-box');
+            const panelRegistro = document.getElementById('panelRegistro');
             const p = productos[codigo];
             
             if (p) {
+                // PRODUCTO ENCONTRADO: Ocultar registro
+                panelRegistro.style.display = 'none';
                 box.innerHTML = `
                     <div class="nombre-grande">${p.nombre}</div>
                     <div class="precio-grande">$${p.price}</div>
-                    <small style="color:gray">Código: ${codigo}</small>
+                    <div class="codigo-texto">SKU: ${codigo}</div>
                 `;
             } else {
+                // PRODUCTO NO ENCONTRADO: Mostrar registro
+                panelRegistro.style.display = 'block';
                 box.innerHTML = `
-                    <div style="color:red; font-weight:bold;">No registrado</div>
-                    <div style="margin:10px 0;">Código: ${codigo}</div>
-                    <button onclick="formPre('${codigo}')" style="background:#6c757d; padding:8px; font-size:0.9rem;">Registrar ahora</button>
+                    <div style="color:#d9534f; font-weight:bold; font-size: 1.2rem;">PRODUCTO NUEVO</div>
+                    <div class="codigo-texto">Código detectado: ${codigo}</div>
+                    <button onclick="formPre('${codigo}')" style="background:#6c757d; padding:10px; margin-top:15px; font-size:0.9rem;">Registrar Producto</button>
                 `;
             }
         }
