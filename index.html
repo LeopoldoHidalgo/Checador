@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Checador Pro</title>
+    <!-- Usamos una fuente de la librería más estable -->
     <script src="https://unpkg.com" type="text/javascript"></script>
     <style>
         body { font-family: sans-serif; background: #f4f4f9; display: flex; flex-direction: column; align-items: center; padding: 15px; margin: 0; }
@@ -12,9 +13,6 @@
         .result-box { margin-top: 15px; padding: 15px; background: #eee; border-radius: 8px; min-height: 60px; }
         button { background: #007bff; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; width: 100%; font-weight: bold; }
         input { width: 100%; padding: 10px; margin: 5px 0; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
-        .precio-grande { color: #28a745; font-size: 2.5rem; font-weight: bold; margin: 5px 0; }
-        .nombre-grande { font-size: 1.3rem; font-weight: bold; color: #333; }
-        #panelRegistro { display: none; }
     </style>
 </head>
 <body>
@@ -26,12 +24,12 @@
         <div class="result-box" id="result-box">Listo para escanear</div>
     </div>
 
-    <div class="card" id="panelRegistro">
+    <div class="card">
         <h3>Registrar Producto</h3>
         <input type="text" id="newCode" placeholder="Código">
         <input type="text" id="newName" placeholder="Nombre del producto">
-        <input type="text" id="newPrice" placeholder="Precio">
-        <button onclick="guardar()" style="background:#28a745; margin-top:10px;">Guardar</button>
+        <input type="text" id="newPrice" placeholder="Precio (ej: 25.00)">
+        <button onclick="guardar()" style="background:#28a745; margin-top:10px;">Guardar en Base de Datos</button>
     </div>
 
     <script>
@@ -39,10 +37,9 @@
         let scanner = null;
 
         function encender() {
-            // Si la librería no ha cargado, esperamos 500ms y reintentamos automáticamente
+            // Verificamos si la librería cargó correctamente
             if (typeof Html5Qrcode === "undefined") {
-                console.log("Reintentando carga...");
-                setTimeout(encender, 500); 
+                alert("La librería aún no carga. Espera 2 segundos y reintenta.");
                 return;
             }
 
@@ -50,15 +47,11 @@
             document.getElementById('reader').style.display = 'block';
             
             scanner = new Html5Qrcode("reader");
+            
             const config = { fps: 10, qrbox: { width: 250, height: 150 } };
 
             scanner.start({ facingMode: "environment" }, config, (text) => {
-                scanner.stop().then(() => {
-                    document.getElementById('reader').style.display = 'none';
-                    document.getElementById('btnStart').style.display = 'block';
-                    document.getElementById('btnStart').innerText = "Escanear otro";
-                    mostrar(text);
-                });
+                mostrar(text);
                 if (navigator.vibrate) navigator.vibrate(100);
             }).catch(err => {
                 alert("Error de cámara: " + err);
@@ -68,28 +61,31 @@
 
         function mostrar(codigo) {
             const box = document.getElementById('result-box');
-            const panel = document.getElementById('panelRegistro');
             const p = productos[codigo];
-
             if (p) {
-                panel.style.display = 'none';
-                box.innerHTML = `<div class="nombre-grande">${p.nombre}</div><div class="precio-grande">$${p.price}</div>`;
+                box.innerHTML = `<strong>${p.nombre}</strong><br><span style="color:green; font-size:1.5em;">$${p.price}</span>`;
             } else {
-                panel.style.display = 'block';
-                box.innerHTML = `No registrado: ${codigo}`;
-                document.getElementById('newCode').value = codigo;
+                box.innerHTML = `No registrado: ${codigo} <br> <button onclick="formPre('${codigo}')" style="padding:4px; margin-top:5px;">Registrar</button>`;
             }
+        }
+
+        function formPre(c) {
+            document.getElementById('newCode').value = c;
+            document.getElementById('newName').focus();
         }
 
         function guardar() {
             const c = document.getElementById('newCode').value;
             const n = document.getElementById('newName').value;
             const p = document.getElementById('newPrice').value;
+
             if(c && n && p) {
                 productos[c] = { nombre: n, price: p };
                 localStorage.setItem('misProductos', JSON.stringify(productos));
-                document.getElementById('panelRegistro').style.display = 'none';
-                mostrar(c);
+                alert("¡Guardado!");
+                document.getElementById('newCode').value = '';
+                document.getElementById('newName').value = '';
+                document.getElementById('newPrice').value = '';
             }
         }
     </script>
