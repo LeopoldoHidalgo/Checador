@@ -10,19 +10,36 @@
         .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); width: 100%; max-width: 400px; margin-bottom: 15px; text-align: center; box-sizing: border-box; }
         #reader { width: 100%; border-radius: 8px; background: #000; display: none; }
         
+        /* Estilo para que los datos resalten en el centro */
         .result-box { 
-            margin-top: 15px; padding: 25px; background: #fff; border: 2px solid #eee; border-radius: 12px; 
-            min-height: 120px; display: flex; flex-direction: column; justify-content: center; align-items: center;
+            margin-top: 15px; 
+            padding: 25px; 
+            background: #fff; 
+            border: 2px solid #eee;
+            border-radius: 12px; 
+            min-height: 120px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
         }
-        
-        /* Clase para el 70% de pantalla */
+
+        /* CAMBIO: Clase para ocupar el 70% de la pantalla */
         .vista-70 {
-            position: fixed; top: 15%; left: 5%; width: 90vw; height: 70vh;
-            z-index: 1000; box-shadow: 0 0 50px rgba(0,0,0,0.2); border: none; background: white; border-radius: 20px;
+            position: fixed;
+            top: 15%;
+            left: 5%;
+            width: 90vw;
+            height: 70vh;
+            z-index: 1000;
+            box-shadow: 0 0 50px rgba(0,0,0,0.3);
+            border: none;
+            background: white;
+            border-radius: 20px;
         }
         
-        .precio-grande { color: #28a745; font-size: 5rem; font-weight: bold; margin: 10px 0; }
-        .nombre-grande { font-size: 2.5rem; color: #333; font-weight: bold; }
+        .precio-grande { color: #28a745; font-size: 4rem; font-weight: bold; margin: 10px 0; }
+        .nombre-grande { font-size: 2rem; color: #333; font-weight: bold; }
 
         button { background: #007bff; color: white; border: none; padding: 15px; border-radius: 8px; cursor: pointer; width: 100%; font-weight: bold; font-size: 1.1rem; }
         input { width: 100%; padding: 10px; margin: 5px 0; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
@@ -39,6 +56,7 @@
         </div>
     </div>
 
+ 
     <script>
         let productos = JSON.parse(localStorage.getItem('misProductos')) || {};
         let scanner = null;
@@ -48,26 +66,30 @@
                 alert("La librería aún no carga. Espera 2 segundos.");
                 return;
             }
+
             const btnStart = document.getElementById('btnStart');
             const readerDiv = document.getElementById('reader');
             const resultBox = document.getElementById('result-box');
 
-            resultBox.classList.remove('vista-70'); // Quitar pantalla completa al iniciar
+            resultBox.classList.remove('vista-70'); // Quitar el tamaño grande al iniciar búsqueda
             btnStart.style.display = 'none';
             readerDiv.style.display = 'block';
             resultBox.innerHTML = "Buscando...";
 
             scanner = new Html5Qrcode("reader");
+            
             const config = { fps: 10, qrbox: { width: 250, height: 150 } };
 
             scanner.start({ facingMode: "environment" }, config, (text) => {
+                // AL ENCONTRAR: Detenemos cámara y limpiamos
                 scanner.stop().then(() => {
                     scanner.clear();
                     readerDiv.style.display = 'none';
-                    btnStart.style.display = 'block';
+                    btnStart.style.display = 'block'; // Reactivamos el botón
                     btnStart.innerText = "Escanear otro producto";
                     mostrar(text);
                 });
+                
                 if (navigator.vibrate) navigator.vibrate(100);
             }).catch(err => {
                 alert("Error de cámara: " + err);
@@ -80,7 +102,7 @@
             const p = productos[codigo];
             
             if (p) {
-                box.classList.add('vista-70'); // Activa el 70% de pantalla
+                box.classList.add('vista-70'); // CAMBIO: Aplicar el tamaño del 70%
                 box.innerHTML = `
                     <div class="nombre-grande">${p.nombre}</div>
                     <div class="precio-grande">$${p.price}</div>
@@ -92,16 +114,23 @@
                 box.innerHTML = `
                     <div style="color:red; font-weight:bold;">No registrado</div>
                     <div style="margin:10px 0;">Código: ${codigo}</div>
-                    <div class="card" style="box-shadow:none; border:1px solid #ddd;">
-                        <h3>Registrar Producto</h3>
-                        <input type="text" id="newCode" value="${codigo}" readonly>
-                        <input type="text" id="newName" placeholder="Nombre del producto">
-                        <input type="text" id="newPrice" placeholder="Precio (ej: 25.00)">
-                        <button onclick="guardar()" style="background:#28a745; margin-top:10px;">Guardar Producto</button>
-                    </div>
+                    <button onclick="formPre('${codigo}')" style="background:#6c757d; padding:8px; font-size:0.9rem;">Registrar ahora</button>
+
+    <div class="card">
+        <h3>Registrar Producto</h3>
+        <input type="text" id="newCode" placeholder="Código">
+        <input type="text" id="newName" placeholder="Nombre del producto">
+        <input type="text" id="newPrice" placeholder="Precio (ej: 25.00)">
+        <button onclick="guardar()" style="background:#28a745; margin-top:10px;">Guardar Producto</button>
+    </div>
+
                 `;
-                setTimeout(() => document.getElementById('newName').focus(), 100);
             }
+        }
+
+        function formPre(c) {
+            document.getElementById('newCode').value = c;
+            document.getElementById('newName').focus();
         }
 
         function guardar() {
@@ -113,9 +142,8 @@
                 productos[c] = { nombre: n, price: p };
                 localStorage.setItem('misProductos', JSON.stringify(productos));
                 alert("¡Guardado!");
-                mostrar(c); // Muestra el resultado final (en 70% de pantalla)
-            } else {
-                alert("Llena todos los campos");
+                // Mostrar el resultado después de guardar
+                mostrar(c);
             }
         }
     </script>
