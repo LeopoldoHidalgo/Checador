@@ -29,9 +29,9 @@
 
         button { background: #007bff; color: white; border: none; padding: 15px; border-radius: 8px; cursor: pointer; width: 100%; font-weight: bold; font-size: 1.1rem; }
         input { width: 100%; padding: 10px; margin: 5px 0; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
-
-        /* CAMBIO: Ocultar el panel de registro por defecto al cargar */
-        #cardRegistro { display: none; }
+        
+        /* CAMBIO 1: El segundo cuadro inicia oculto */
+        #cuadroRegistro { display: none; }
     </style>
 </head>
 <body>
@@ -45,8 +45,8 @@
         </div>
     </div>
 
-    <!-- Se añadió ID cardRegistro para poder controlarlo -->
-    <div class="card" id="cardRegistro">
+    <!-- CAMBIO 2: Le pusimos id="cuadroRegistro" para poder mandarlo llamar -->
+    <div class="card" id="cuadroRegistro">
         <h3>Registrar Producto</h3>
         <input type="text" id="newCode" placeholder="Código">
         <input type="text" id="newName" placeholder="Nombre del producto">
@@ -77,10 +77,11 @@
             const config = { fps: 10, qrbox: { width: 250, height: 150 } };
 
             scanner.start({ facingMode: "environment" }, config, (text) => {
+                // AL ENCONTRAR: Detenemos cámara y limpiamos
                 scanner.stop().then(() => {
                     scanner.clear();
                     readerDiv.style.display = 'none';
-                    btnStart.style.display = 'block'; 
+                    btnStart.style.display = 'block'; // Reactivamos el botón
                     btnStart.innerText = "Escanear otro producto";
                     mostrar(text);
                 });
@@ -88,26 +89,24 @@
                 if (navigator.vibrate) navigator.vibrate(100);
             }).catch(err => {
                 alert("Error de cámara: " + err);
-                btnStart.style.display = 'block';
+                document.getElementById('btnStart').style.display = 'block';
             });
         }
 
         function mostrar(codigo) {
             const box = document.getElementById('result-box');
-            const panelRegistro = document.getElementById('cardRegistro');
             const p = productos[codigo];
             
+            // CAMBIO 3: Lógica para ocultar o mostrar el cuadro
             if (p) {
-                // Si existe, nos aseguramos de que el panel de registro esté oculto
-                panelRegistro.style.display = 'none';
+                document.getElementById('cuadroRegistro').style.display = 'none';
                 box.innerHTML = `
                     <div class="nombre-grande">${p.nombre}</div>
                     <div class="precio-grande">$${p.price}</div>
                     <small style="color:gray">Código: ${codigo}</small>
                 `;
             } else {
-                // Si NO existe, mostramos el panel de registro
-                panelRegistro.style.display = 'block';
+                document.getElementById('cuadroRegistro').style.display = 'block';
                 box.innerHTML = `
                     <div style="color:red; font-weight:bold;">No registrado</div>
                     <div style="margin:10px 0;">Código: ${codigo}</div>
@@ -133,9 +132,8 @@
                 document.getElementById('newCode').value = '';
                 document.getElementById('newName').value = '';
                 document.getElementById('newPrice').value = '';
-                // Ocultar de nuevo el panel tras guardar
-                document.getElementById('cardRegistro').style.display = 'none';
-                mostrar(c);
+                // Ocultar al terminar de guardar
+                document.getElementById('cuadroRegistro').style.display = 'none';
             }
         }
     </script>
