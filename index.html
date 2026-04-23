@@ -5,9 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Verificador de Precios</title>
   
-  <!-- 📷 Librería ligera para escanear Códigos de Barras -->
-  <script src="https://unpkg.com"></script>
-  
   <style>
     /* 🎨 ESTILOS ENFOCADOS EN TABLETA */
     :root {
@@ -184,7 +181,7 @@
       display: none !important;
     }
 
-    /* 🔒 BOTONES DE ADMINISTRADOR DISCRETOS */
+    /* 🔒 BOTÓN DE ADMINISTRADOR DISCRETO */
     .admin-secreto {
       position: absolute;
       top: 15px;
@@ -199,42 +196,10 @@
       opacity: 0.1; 
       transition: opacity 0.3s;
       font-size: 1.5rem;
-      z-index: 100;
     }
     
     .admin-secreto:hover {
       opacity: 0.8;
-    }
-
-    .camara-secreta {
-      position: absolute;
-      top: 15px;
-      left: 15px;
-      width: 45px;
-      height: 45px;
-      background: transparent;
-      border: none;
-      cursor: pointer;
-      margin: 0;
-      padding: 0;
-      opacity: 0.1; 
-      transition: opacity 0.3s;
-      font-size: 1.5rem;
-      z-index: 100;
-    }
-
-    .camara-secreta:hover {
-      opacity: 0.8;
-    }
-
-    /* 📷 Estilos del Lector de Cámara */
-    #lector-qr {
-      width: 100%;
-      max-width: 400px;
-      margin: 0 auto 20px auto;
-      border-radius: 12px;
-      overflow: hidden;
-      display: none;
     }
 
     @keyframes fadeIn {
@@ -245,13 +210,7 @@
 </head>
 <body onload="inicializarApp()">
 
-  <!-- Botón discreto a la derecha para cargar CSV -->
   <button class="admin-secreto" onclick="activarCargaOculta()">⚙️</button>
-
-  <!-- Botón discreto a la izquierda para activar cámara -->
-  <button class="camara-secreta" onclick="toggleCamara()">👁️</button>
-  
-  <!-- Input de archivos invisible en el código -->
   <input type="file" id="archivoCSVOculto" accept=".csv" class="oculto" onchange="procesarCSVOculto(this)">
 
   <div class="kiosko-container">
@@ -259,10 +218,6 @@
     <div id="pantallaCaptura">
       <h1>Verificador</h1>
       <p class="instruccion">Escribe el código de barras o el nombre del producto</p>
-      
-      <!-- 📷 Lector de cámara oculto inicialmente -->
-      <div id="lector-qr"></div>
-      
       <input type="text" id="lectorEntrada" placeholder="Buscar aquí..." autofocus>
       <button onclick="accionVerificar()">Consultar Precio</button>
     </div>
@@ -282,8 +237,7 @@
 
   <script>
     let productosRegistrados = {};
-    let temporizadorRegreso = null; 
-    let html5QrCode = null; // 📷 Instancia de la cámara
+    let temporizadorRegreso = null; // ⚡ Variable para controlar el tiempo
 
     /* =======================================================
        📦 CAPA DE DATOS
@@ -338,18 +292,15 @@
 
       pantallaCaptura.classList.add("oculto");
       btnVolver.classList.remove("oculto");
-      
-      // Apaga la cámara si estaba encendida al momento de consultar
-      cerrarCamara();
 
       if (resultados.length === 1) {
         display.style.display = "block";
-        mostrarPrecioGigante(resultados);
-        iniciarTemporizador(); 
+        mostrarPrecioGigante(resultados[0]);
+        iniciarTemporizador(); // ⚡ Inicia la cuenta de 10 seg
       } else if (resultados.length > 1) {
         pantallaCoincidencias.style.display = "block";
         listaCoincidencias.innerHTML = "";
-        iniciarTemporizador(); 
+        iniciarTemporizador(); // ⚡ Inicia la cuenta también en la lista
         
         resultados.forEach(prod => {
           const div = document.createElement("div");
@@ -365,7 +316,7 @@
             pantallaCoincidencias.style.display = "none";
             display.style.display = "block";
             mostrarPrecioGigante(prod);
-            iniciarTemporizador(); 
+            iniciarTemporizador(); // ⚡ Reinicia el tiempo al tocar el producto
           };
           listaCoincidencias.appendChild(div);
         });
@@ -375,7 +326,7 @@
           <p class="no-encontrado">❌ No se encontró el producto</p>
           <p style="color:#7f8c8d; margin:15px 0 0 0; font-size:1.4rem;">Intenta con el código de barras o acude con un empleado.</p>
         `;
-        iniciarTemporizador(); 
+        iniciarTemporizador(); // ⚡ Inicia la cuenta si no encuentra nada
       }
 
       input.value = "";
@@ -390,10 +341,14 @@
       `;
     }
 
+    // ⚡ FUNCIONES DEL TEMPORIZADOR
     function iniciarTemporizador() {
+      // Si ya había un conteo corriendo, lo borramos para empezar de cero
       if (temporizadorRegreso) {
         clearTimeout(temporizadorRegreso);
       }
+      
+      // Activa el regreso automático en 10,000 milisegundos (10 segundos)
       temporizadorRegreso = setTimeout(() => {
         restablecerPantalla();
       }, 10000); 
@@ -406,6 +361,7 @@
       const pantallaCoincidencias = document.getElementById("pantallaCoincidencias");
       const btnVolver = document.getElementById("btnVolver");
 
+      // ⚡ Cancela el temporizador si el usuario interactuó voluntariamente
       if (temporizadorRegreso) {
         clearTimeout(temporizadorRegreso);
       }
@@ -425,62 +381,6 @@
     });
 
     /* =======================================================
-       📷 FUNCIONES OCULTAS DE LA CÁMARA
-       ======================================================= */
-    function toggleCamara() {
-      const lectorDiv = document.getElementById("lector-qr");
-
-      if (!html5QrCode) {
-        html5QrCode = new Html5Qrcode("lector-qr");
-      }
-
-      if (lectorDiv.style.display === "none" || lectorDiv.style.display === "") {
-        lectorDiv.style.display = "block";
-
-        html5QrCode.start(
-          { facingMode: "environment" }, 
-          {
-            fps: 10,
-            qrbox: { width: 250, height: 150 }
-          },
-          onScanSuccess,
-          onScanFailure
-        ).catch(err => {
-          alert("Error al acceder a la cámara. Asegúrate de otorgar permisos.");
-          cerrarCamara();
-          console.error(err);
-        });
-      } else {
-        cerrarCamara();
-      }
-    }
-
-    function cerrarCamara() {
-      const lectorDiv = document.getElementById("lector-qr");
-      
-      lectorDiv.style.display = "none";
-
-      if (html5QrCode && html5QrCode.isScanning) {
-        html5QrCode.stop().catch(err => console.error("Error al detener cámara:", err));
-      }
-    }
-
-    function onScanSuccess(decodedText, decodedResult) {
-      document.getElementById("lectorEntrada").value = decodedText;
-      
-      if (navigator.vibrate) {
-        navigator.vibrate(200);
-      }
-
-      cerrarCamara();
-      accionVerificar(); // Consulta de forma inmediata al escanear
-    }
-
-    function onScanFailure(error) {
-      // Ignorar fallos de cuadros por segundo donde no localiza códigos
-    }
-
-    /* =======================================================
        🛡️ CAPA DE CARGA CSV OCULTA
        ======================================================= */
     function activarCargaOculta() {
@@ -489,7 +389,7 @@
 
     function procesarCSVOculto(input) {
       const file = input.files; 
-      if (!file || !file) return;
+      if (!file || !file[0]) return;
 
       const reader = new FileReader();
       reader.onload = function(e) {
@@ -522,10 +422,10 @@
           columnas.push(celdaActual.trim().replace(/^"|"$/g, ''));
 
           if (columnas.length >= 4) {
-            let codigo = columnas;
-            let nombre = columnas;
-            let presentacion = columnas;
-            let precio = parseFloat(columnas);
+            let codigo = columnas[0];
+            let nombre = columnas[1];
+            let presentacion = columnas[2];
+            let precio = parseFloat(columnas[3]);
 
             if (codigo && nombre && !isNaN(precio)) {
               productosRegistrados[codigo] = { nombre: nombre, presentacion: presentacion, precio: precio };
@@ -544,7 +444,7 @@
         
         input.value = "";
       };
-      reader.readAsText(file);
+      reader.readAsText(file[0]);
     }
   </script>
 </body>
