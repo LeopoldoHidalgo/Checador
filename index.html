@@ -3,20 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Verificador de Precios - 7 Col</title>
+    <title>Verificador de Precios - 8 Col</title>
     <style>
-        /* 🎨 DISEÑO SINCRONIZADO CON EL SISTEMA */
         * { box-sizing: border-box; }
         
         body { 
             font-family: 'Segoe UI', sans-serif; 
-            background-color: #2c3e50; /* Azul Oscuro */
+            background-color: #2c3e50; 
             margin: 0; 
             display: flex; 
             justify-content: center; 
             align-items: center; 
             height: 100vh; 
-            color: #333;
         }
 
         .container { 
@@ -47,25 +45,18 @@
 
         .resultado { margin-top: 25px; min-height: 160px; display: flex; flex-direction: column; justify-content: center; }
         
-        .nombre-prod { font-size: 1.6rem; font-weight: bold; color: #2c3e50; margin: 5px 0; line-height: 1.2; }
+        .nombre-prod { font-size: 1.6rem; font-weight: bold; color: #2c3e50; margin: 5px 0; }
         .pres-prod { font-size: 1.1rem; color: #7f8c8d; margin-bottom: 10px; }
         
-        /* EL PRECIO: Color Verde Éxito */
         .precio-prod { 
             font-size: 3.8rem; 
             font-weight: 900; 
             color: #2ecc71; 
             margin: 5px 0;
-            letter-spacing: -1px;
         }
 
         .error { color: #e74c3c; font-weight: bold; font-size: 1.2rem; }
         .instruccion { color: #95a5a6; font-size: 0.9rem; margin-top: 10px; }
-
-        @media (max-width: 400px) {
-            .precio-prod { font-size: 3rem; }
-            h1 { font-size: 1.3rem; }
-        }
     </style>
 </head>
 <body>
@@ -74,21 +65,20 @@
         <div class="settings-icon" onclick="configurarCSV()">⚙️</div>
         <h1>Verificador de Precios</h1>
         
-        <input type="text" id="buscador" placeholder="Escanea el código..." autofocus onkeydown="if(event.key==='Enter') buscarProducto()">
+        <input type="text" id="buscador" placeholder="Escanea el producto..." autofocus onkeydown="if(event.key==='Enter') buscarProducto()">
 
         <div id="resultado" class="resultado">
-            <p class="instruccion">Esperando escaneo...</p>
+            <p class="instruccion">Esperando código...</p>
         </div>
     </div>
 
     <script>
         let productosDB = {};
 
-        // Carga inicial de datos
         document.addEventListener('DOMContentLoaded', cargarDatos);
 
         function configurarCSV() {
-            const url = prompt("Pega el enlace CSV de Google Sheets:", localStorage.getItem('csv_master_url') || "");
+            const url = prompt("Enlace CSV (8 columnas):", localStorage.getItem('csv_master_url') || "");
             if (url !== null) {
                 localStorage.setItem('csv_master_url', url);
                 location.reload();
@@ -97,35 +87,29 @@
 
         async function cargarDatos() {
             const url = localStorage.getItem('csv_master_url');
-            if (!url) {
-                document.getElementById('resultado').innerHTML = "<p class='error'>⚠️ Haz clic en el engranaje para configurar el enlace CSV.</p>";
-                return;
-            }
+            if (!url) return;
 
             try {
                 const res = await fetch(url);
                 const data = await res.text();
-                // Separar filas y quitar la primera (encabezados)
                 const filas = data.split(/\r?\n/).filter(f => f.trim() !== "").slice(1);
                 
                 productosDB = {};
                 filas.forEach(f => {
-                    // Split que respeta comas dentro de textos entrecomillados
                     const c = f.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
                     
-                    if (c.length >= 5) { // Debe tener al menos hasta el Precio (Col E)
+                    if (c.length >= 6) { 
                         const cod = c[0].replace(/"/g, '').trim();
                         productosDB[cod] = {
                             nombre: c[1].replace(/"/g, '').trim(),
                             presentacion: c[2].replace(/"/g, '').trim(),
-                            // MAPEO DE 7 COLUMNAS: Precio Público es índice [4] (Columna E)
-                            precio: parseFloat(c[4].replace(/"/g, '').trim()) || 0
+                            // MAPEO DE 8 COLUMNAS: Precio Público es índice [5] (Columna F)
+                            precio: parseFloat(c[5].replace(/"/g, '').trim()) || 0
                         };
                     }
                 });
-                console.log("Base de datos cargada: ", Object.keys(productosDB).length, " productos.");
             } catch (e) {
-                document.getElementById('resultado').innerHTML = "<p class='error'>Error al conectar con Google Sheets.</p>";
+                console.error("Error al cargar datos");
             }
         }
 
@@ -142,13 +126,9 @@
                     <div class="precio-prod">$${p.precio.toFixed(2)}</div>
                 `;
             } else if (codigo !== "") {
-                resDiv.innerHTML = `
-                    <p class="error">❌ No encontrado</p>
-                    <p style="font-size:0.8rem; color:#95a5a6;">Código: ${codigo}</p>
-                `;
+                resDiv.innerHTML = `<p class="error">Producto no encontrado</p>`;
             }
-
-            input.value = ""; // Limpiar para el siguiente
+            input.value = "";
             input.focus();
         }
     </script>
