@@ -3,18 +3,18 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Verificador de Precios Pro - Comentado</title>
+  <title>Verificador de Precios Kiosko Pro</title>
   
   <style>
-    /* --- CONFIGURACIÓN VISUAL (CSS) --- */
+    /* --- DISEÑO GLOBAL --- */
     :root {
-      --color-fondo: #2c3e50;    /* Color del fondo de la pantalla */
-      --color-primario: #34495e; /* Color de los títulos */
-      --color-acento: #2ecc71;   /* Color verde del precio gigante */
-      --color-texto: #333;       /* Color del texto general */
+      --color-fondo: #2c3e50;
+      --color-primario: #34495e;
+      --color-acento: #2ecc71;
+      --color-texto: #333;
+      --color-azul: #2980b9;
     }
     
-    /* Estilos para que el verificador se vea como una app de Tablet */
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       background-color: var(--color-fondo);
@@ -24,144 +24,212 @@
       align-items: center;
       justify-content: center;
       height: 100vh;
-      overflow: hidden;
+      overflow: hidden; /* Evita que la pantalla se mueva */
     }
 
-    /* Contenedor blanco central */
+    /* CONTENEDOR PRINCIPAL (Estilo Tablet) */
     .kiosko-container {
       width: 95%;
-      max-width: 800px;
+      max-width: 900px;
       background: #ffffff;
-      padding: 40px;
-      border-radius: 20px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.3); 
+      padding: 50px;
+      border-radius: 30px;
+      box-shadow: 0 15px 40px rgba(0,0,0,0.4); 
       text-align: center;
+      display: flex;
+      flex-direction: column;
+      box-sizing: border-box;
     }
 
-    /* Diseño del precio gigante */
-    .precio-producto { 
-      font-size: 8rem; 
-      color: var(--color-acento); 
-      margin: 10px 0 0 0; 
-      font-weight: 800; 
+    h1 { color: var(--color-primario); font-size: 3.5rem; margin: 0 0 10px 0; font-weight: 800; }
+    .instruccion { font-size: 1.6rem; color: #7f8c8d; margin-bottom: 30px; }
+
+    /* --- EL BUSCADOR GIGANTE --- */
+    input[type="text"] {
+      width: 100%;
+      padding: 30px;
+      font-size: 2.8rem; /* Texto muy grande */
+      text-align: center;
+      border: 4px solid #3498db;
+      border-radius: 20px;
+      box-sizing: border-box;
+      outline: none;
+      background-color: #f9f9f9;
+      color: #2c3e50;
+      font-weight: bold;
+      transition: all 0.3s ease;
     }
 
-    /* Botón secreto del engrane */
-    .admin-secreto {
-      position: absolute; top: 15px; right: 15px;
-      width: 45px; height: 45px; background: transparent;
-      border: none; cursor: pointer; opacity: 0.1;
+    input[type="text"]:focus {
+      border-color: var(--color-acento);
+      background-color: #fff;
+      box-shadow: 0 0 25px rgba(46, 204, 113, 0.3);
     }
 
-    /* Etiqueta de estado en la esquina inferior */
-    .status-offline {
-      position: absolute; bottom: 10px; left: 10px;
-      font-size: 0.8rem; color: white; opacity: 0.5;
+    /* BOTONES */
+    .btn-consulta {
+      width: 100%;
+      margin-top: 25px;
+      padding: 25px;
+      font-size: 2rem;
+      background-color: var(--color-azul);
+      color: white;
+      border: none;
+      border-radius: 20px;
+      cursor: pointer;
+      font-weight: 800;
+      text-transform: uppercase;
     }
 
+    .btn-consulta:active { transform: scale(0.98); background-color: #1a5276; }
+
+    .btn-volver {
+      background-color: #7f8c8d;
+      margin-top: 30px;
+      width: 100%;
+      padding: 20px;
+      font-size: 1.5rem;
+      color: white;
+      border: none;
+      border-radius: 15px;
+      cursor: pointer;
+    }
+
+    /* --- PANTALLA DE RESULTADOS --- */
+    .display-precio {
+      padding: 40px;
+      background: #f1f2f6;
+      border-radius: 20px;
+      display: none;
+      animation: fadeIn 0.3s ease-in-out;
+    }
+
+    .nombre-producto { font-size: 3rem; color: var(--color-primario); margin: 0; font-weight: 800; }
+    .presentacion-producto { font-size: 1.8rem; color: #7f8c8d; margin: 10px 0; }
+    .precio-producto { font-size: 10rem; color: var(--color-acento); margin: 20px 0 0 0; font-weight: 900; }
+
+    /* LISTA DE SUGERENCIAS */
+    .contenedor-coincidencias {
+      display: none;
+      text-align: left;
+      max-height: 450px;
+      overflow-y: auto;
+      padding: 10px;
+    }
+
+    .item-coincidencia {
+      background: #fff;
+      padding: 20px;
+      margin-bottom: 15px;
+      border-radius: 15px;
+      border: 3px solid #eee;
+      cursor: pointer;
+      font-size: 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: background 0.2s;
+    }
+    .item-coincidencia:hover { background: #f0f0f0; border-color: var(--color-azul); }
+
+    /* UTILIDADES */
+    .status-bar { position: absolute; bottom: 15px; left: 20px; font-size: 0.9rem; color: white; opacity: 0.6; }
+    .admin-gear { position: absolute; top: 15px; right: 15px; width: 50px; height: 50px; opacity: 0.05; cursor: pointer; background: none; border: none; }
+    .admin-gear:hover { opacity: 0.5; }
     .oculto { display: none !important; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
   </style>
 </head>
-
 <body onload="inicializarApp()">
 
-  <button class="admin-secreto" onclick="configurarCSV()">⚙️</button>
+  <button class="admin-gear" onclick="configurarCSV()">⚙️</button>
   
-  <div id="statusLabel" class="status-offline">Estado: Sincronizando...</div>
+  <div id="statusLabel" class="status-bar">Sincronizando datos...</div>
 
   <div class="kiosko-container">
     
     <div id="pantallaCaptura">
-      <h1>Verificador</h1>
-      <p style="font-size: 1.4rem; color: #7f8c8d;">Escanea el código o escribe el nombre</p>
-      <input type="text" id="lectorEntrada" placeholder="Buscar producto..." autofocus>
-      <div style="margin-top:15px;">
-        <button onclick="accionVerificar()" style="width:100%; padding:20px; font-size:1.6rem; background:#2980b9; color:white; border:none; border-radius:12px; cursor:pointer;">Consultar Precio</button>
-      </div>
+      <h1>VERIFICADOR</h1>
+      <p class="instruccion">Escanee el código o escriba el nombre</p>
+      <input type="text" id="lectorEntrada" placeholder="Esperando producto..." autofocus autocomplete="off">
+      <button class="btn-consulta" onclick="accionVerificar()">Consultar</button>
     </div>
     
-    <div id="pantallaCoincidencias" style="display:none; text-align:left; max-height:400px; overflow-y:auto;">
-      <p style="text-align:center; font-weight:bold;">Selecciona un producto:</p>
+    <div id="pantallaCoincidencias" class="contenedor-coincidencias">
+      <p style="text-align:center; font-weight:bold; font-size: 1.4rem;">Varios encontrados. Seleccione uno:</p>
       <div id="listaCoincidencias"></div>
     </div>
     
-    <div id="pantallaResultado" style="display:none; background:#f1f2f6; padding:40px; border-radius:15px;"></div>
+    <div id="pantallaResultado" class="display-precio"></div>
     
-    <button id="btnVolver" class="oculto" onclick="restablecerPantalla()" style="background-color: #7f8c8d; color:white; border:none; padding:15px; border-radius:10px; margin-top: 20px; width:100%;">🔍 Nueva Consulta</button>
+    <button id="btnVolver" class="oculto btn-volver" onclick="restablecerPantalla()">🔍 Nueva Consulta</button>
   </div>
 
   <script>
-    /* --- LÓGICA DE PROGRAMACIÓN (JAVASCRIPT) --- */
+    let productosRegistrados = {}; 
+    let temporizadorRegreso = null;
 
-    let productosRegistrados = {}; // Diccionario donde se guardan los productos en memoria RAM
-    let temporizadorRegreso = null; // Variable para limpiar la pantalla automáticamente
-
-    // Función principal que arranca todo
+    // 1. INICIO: Carga datos al abrir la app y pone reloj de actualización
     async function inicializarApp() {
       const url = localStorage.getItem('csv_master_url');
       if (!url) {
-        alert("Configura el enlace CSV en el icono del engrane.");
+        alert("Bienvenido. Use el engrane superior para configurar su enlace de Google Sheets.");
         return;
       }
       
-      // Primera descarga de datos al abrir
       await cargarDesdeSheets(url);
 
-      // Sincronización automática: Cada 30 minutos (1,800,000 ms) intenta bajar cambios
+      // Actualizar automáticamente cada 30 minutos sin refrescar la página
       setInterval(() => {
         cargarDesdeSheets(url);
       }, 1800000); 
     }
 
-    // Guarda la URL de Google Sheets en la memoria del navegador
+    // 2. CONFIGURACIÓN: Guarda la URL del CSV
     function configurarCSV() {
-      const url = prompt("Pega el enlace CSV de Google Sheets:", localStorage.getItem('csv_master_url') || "");
+      const url = prompt("Pegue el enlace CSV de Google Sheets:", localStorage.getItem('csv_master_url') || "");
       if (url) {
         localStorage.setItem('csv_master_url', url);
-        location.reload(); // Reinicia para aplicar la nueva URL
+        location.reload();
       }
     }
 
-    // Descarga el archivo desde Internet o usa la copia de seguridad (Caché)
+    // 3. DESCARGA: Trae datos de Google o usa la memoria interna (offline)
     async function cargarDesdeSheets(url) {
       const statusLabel = document.getElementById("statusLabel");
       try {
-        // "Anti-Caché": Agregamos la hora actual a la URL para que Google siempre nos de lo más nuevo
-        const urlLimpia = url + (url.includes('?') ? '&' : '?') + "t=" + new Date().getTime();
+        // Evitamos el caché de Google agregando el tiempo actual a la URL
+        const cacheBuster = url + (url.includes('?') ? '&' : '?') + "t=" + new Date().getTime();
         
-        const res = await fetch(urlLimpia);
+        const res = await fetch(cacheBuster);
         if (!res.ok) throw new Error("Error de red");
         
         const data = await res.text();
         
-        // Guardamos una copia en el almacenamiento local (Disco duro/Flash) para uso offline
+        // Guardamos copia de seguridad local (Persistencia offline)
         localStorage.setItem('cache_csv_data', data);
         
-        procesarDatosCSV(data); // Convertimos el texto a lista de productos
-        statusLabel.innerText = "Estado: Conectado (Actualizado " + new Date().toLocaleTimeString() + ")";
+        procesarDatosCSV(data);
+        statusLabel.innerText = "Última actualización exitosa: " + new Date().toLocaleTimeString();
       } catch (e) {
-        // Si falla el internet, buscamos la última copia guardada
         const cache = localStorage.getItem('cache_csv_data');
         if (cache) {
           procesarDatosCSV(cache);
-          statusLabel.innerText = "Estado: Trabajando sin conexión (Caché local)";
+          statusLabel.innerText = "Modo Offline (Cargado desde memoria local)";
         } else {
-          statusLabel.innerText = "Estado: Error - Sin conexión y sin base de datos previa";
+          statusLabel.innerText = "Error: Sin conexión y sin datos previos.";
         }
       }
     }
 
-    // Convierte el texto gigante del CSV en un formato que el programa entienda
+    // 4. PROCESAMIENTO: Convierte el texto CSV en un objeto de búsqueda
     function procesarDatosCSV(data) {
       const filas = data.split(/\r?\n/).filter(f => f.trim() !== "").slice(1);
-      productosRegistrados = {}; // Limpiamos la memoria antes de llenar
+      productosRegistrados = {};
       
       filas.forEach(f => {
-        // Esta regla separa por comas, pero respeta las comas que estén dentro de comillas
-        const c = f.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
-        
+        const c = f.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/); // RegEx para respetar comas dentro de comillas
         if (c.length >= 6) { 
-          // c[0] es Código, c[1] Nombre, c[2] Presentación, c[5] Precio
           const cod = c[0].replace(/"/g, '').trim().toLowerCase();
           productosRegistrados[cod] = {
             nombre: c[1].replace(/"/g, '').trim(),
@@ -172,91 +240,87 @@
       });
     }
 
-    // Lógica para buscar el producto (Ya sea por código de barras o por nombre)
-    function dbConsultarProducto(busqueda) {
-      const termino = busqueda.toLowerCase().trim();
+    // 5. BÚSQUEDA: Busca por código exacto o por texto en el nombre
+    function buscarProducto(termino) {
+      termino = termino.toLowerCase().trim();
       let coincidencias = [];
 
-      // 1. Buscamos si existe el código exacto
+      // Si es código de barras (exacto)
       if (productosRegistrados[termino]) {
         coincidencias.push(productosRegistrados[termino]);
         return coincidencias;
       }
 
-      // 2. Si no es un código, buscamos el texto dentro de los nombres de productos
-      for (const codigo in productosRegistrados) {
-        if (productosRegistrados[codigo].nombre.toLowerCase().includes(termino)) {
-          coincidencias.push(productosRegistrados[codigo]);
+      // Si es búsqueda por nombre
+      for (const cod in productosRegistrados) {
+        if (productosRegistrados[cod].nombre.toLowerCase().includes(termino)) {
+          coincidencias.push(productosRegistrados[cod]);
         }
       }
       return coincidencias;
     }
 
-    // Se activa al presionar Enter o dar clic al botón de buscar
+    // 6. ACCIÓN: Al presionar el botón o usar el escáner
     function accionVerificar() {
       const input = document.getElementById("lectorEntrada");
-      const busqueda = input.value.trim();
-      if (!busqueda) return;
+      const valor = input.value.trim();
+      if (!valor) return;
 
-      const resultados = dbConsultarProducto(busqueda);
+      const resultados = buscarProducto(valor);
       
-      // Ocultamos el buscador y mostramos el botón "Volver"
       document.getElementById("pantallaCaptura").classList.add("oculto");
       document.getElementById("btnVolver").classList.remove("oculto");
 
       if (resultados.length === 1) {
-        mostrarPantallaFinal(resultados[0]); // Mostrar precio directo
+        mostrarPrecio(resultados[0]);
       } else if (resultados.length > 1) {
-        mostrarListaCoincidencias(resultados); // Mostrar lista para elegir
+        mostrarOpciones(resultados);
       } else {
-        // Producto no encontrado
-        const display = document.getElementById("pantallaResultado");
-        display.style.display = "block";
-        display.innerHTML = `<p style="font-size:2rem; color:red;">❌ Producto no registrado</p>`;
-        iniciarTemporizador();
+        const resDiv = document.getElementById("pantallaResultado");
+        resDiv.style.display = "block";
+        resDiv.innerHTML = `<p style="font-size:3rem; color:#e74c3c; font-weight:bold;">❌ NO ENCONTRADO</p>`;
+        iniciarAutoLimpieza();
       }
-      input.value = ""; // Limpia el buscador para la siguiente persona
+      input.value = "";
     }
 
-    // Dibuja el precio en la pantalla
-    function mostrarPantallaFinal(prod) {
-      const display = document.getElementById("pantallaResultado");
-      display.style.display = "block";
-      display.innerHTML = `
-        <p style="font-size:2.5rem; margin:0; font-weight:700;">${prod.nombre}</p>
-        <p style="font-size:1.6rem; color:#7f8c8d; margin:5px 0;">${prod.presentacion}</p>
+    // 7. VISTAS: Dibujan el resultado en pantalla
+    function mostrarPrecio(prod) {
+      const resDiv = document.getElementById("pantallaResultado");
+      resDiv.style.display = "block";
+      resDiv.innerHTML = `
+        <p class="nombre-producto">${prod.nombre}</p>
+        <p class="presentacion-producto">${prod.presentacion}</p>
         <p class="precio-producto">$${prod.precio.toFixed(2)}</p>
       `;
-      iniciarTemporizador(); // Empezar cuenta regresiva para limpiar pantalla
+      iniciarAutoLimpieza();
     }
 
-    // Si hay varios parecidos, crea botones para cada uno
-    function mostrarListaCoincidencias(lista) {
-      const pLista = document.getElementById("pantallaCoincidencias");
-      const divLista = document.getElementById("listaCoincidencias");
-      pLista.style.display = "block";
-      divLista.innerHTML = "";
+    function mostrarOpciones(lista) {
+      const pOpc = document.getElementById("pantallaCoincidencias");
+      const listaDiv = document.getElementById("listaCoincidencias");
+      pOpc.style.display = "block";
+      listaDiv.innerHTML = "";
       
       lista.forEach(prod => {
-        const item = document.createElement("div");
-        item.style = "background:#fafafa; padding:15px; margin-bottom:10px; border-radius:12px; border:2px solid #eee; cursor:pointer;";
-        item.innerHTML = `<b>${prod.nombre}</b> - ${prod.presentacion}`;
-        item.onclick = () => {
-          pLista.style.display = "none";
-          mostrarPantallaFinal(prod);
+        const div = document.createElement("div");
+        div.className = "item-coincidencia";
+        div.innerHTML = `<div><b>${prod.nombre}</b><br><small>${prod.presentacion}</small></div> <b>$${prod.precio.toFixed(2)}</b>`;
+        div.onclick = () => {
+          pOpc.style.display = "none";
+          mostrarPrecio(prod);
         };
-        divLista.appendChild(item);
+        listaDiv.appendChild(div);
       });
-      iniciarTemporizador();
+      iniciarAutoLimpieza();
     }
 
-    // Regresa a la pantalla principal tras 10 segundos de inactividad
-    function iniciarTemporizador() {
+    // 8. FLUJO: Temporizador para limpiar la pantalla sola
+    function iniciarAutoLimpieza() {
       if (temporizadorRegreso) clearTimeout(temporizadorRegreso);
-      temporizadorRegreso = setTimeout(restablecerPantalla, 10000); 
+      temporizadorRegreso = setTimeout(restablecerPantalla, 10000); // 10 segundos
     }
 
-    // Limpia las pantallas y enfoca el buscador
     function restablecerPantalla() {
       if (temporizadorRegreso) clearTimeout(temporizadorRegreso);
       document.getElementById("pantallaResultado").style.display = "none";
@@ -266,7 +330,7 @@
       document.getElementById("lectorEntrada").focus();
     }
 
-    // Detectar cuando se usa el escáner (Tecla Enter)
+    // Soporte para teclado/escáner (Tecla Enter)
     document.getElementById("lectorEntrada").addEventListener("keypress", (e) => {
       if (e.key === "Enter") accionVerificar();
     });
