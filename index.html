@@ -35,13 +35,33 @@
 
         h1 { color: #2c3e50; margin-bottom: 20px; font-size: 1.6rem; font-weight: 800; }
 
+        /* DISEÑO PARA QUE EL BOTÓN Y EL INPUT ESTÉN JUNTOS */
+        .search-box {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
         input { 
-            width: 100%; padding: 15px; border: 2px solid #dfe6e9; 
-            border-radius: 12px; font-size: 1.3rem; text-align: center;
+            flex: 1; padding: 15px; border: 2px solid #dfe6e9; 
+            border-radius: 12px; font-size: 1.1rem; text-align: center;
             outline: none; transition: border-color 0.3s;
             background-color: #f8f9fa;
         }
         input:focus { border-color: #2980b9; background-color: #fff; }
+
+        /* BOTÓN DE BUSCAR */
+        .btn-buscar {
+            background-color: #2980b9;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 0 20px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .btn-buscar:hover { background-color: #3498db; }
 
         .resultado { margin-top: 25px; min-height: 160px; display: flex; flex-direction: column; justify-content: center; }
         
@@ -65,7 +85,10 @@
         <div class="settings-icon" onclick="configurarCSV()">⚙️</div>
         <h1>Verificador de Precios</h1>
         
-        <input type="text" id="buscador" placeholder="Escanea el producto..." autofocus onkeydown="if(event.key==='Enter') buscarProducto()">
+        <div class="search-box">
+            <input type="text" id="buscador" placeholder="Escanea o escribe..." autofocus onkeydown="if(event.key==='Enter') buscarProducto()">
+            <button class="btn-buscar" onclick="buscarProducto()">🔎</button>
+        </div>
 
         <div id="resultado" class="resultado">
             <p class="instruccion">Esperando código...</p>
@@ -97,20 +120,16 @@
                 productosDB = {};
                 filas.forEach(f => {
                     const c = f.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
-                    
                     if (c.length >= 6) { 
                         const cod = c[0].replace(/"/g, '').trim();
                         productosDB[cod] = {
                             nombre: c[1].replace(/"/g, '').trim(),
                             presentacion: c[2].replace(/"/g, '').trim(),
-                            // MAPEO DE 8 COLUMNAS: Precio Público es índice [5] (Columna F)
                             precio: parseFloat(c[5].replace(/"/g, '').trim()) || 0
                         };
                     }
                 });
-            } catch (e) {
-                console.error("Error al cargar datos");
-            }
+            } catch (e) { console.error("Error al cargar datos"); }
         }
 
         function buscarProducto() {
