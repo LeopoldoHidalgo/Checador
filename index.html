@@ -1,289 +1,156 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Verificador de Precios Pro</title>
-  
-  <style>
-    /* 🛠️ RESET DE CAJA PARA EVITAR DESFASES */
-    * { box-sizing: border-box; }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verificador de Precios - 7 Col</title>
+    <style>
+        /* 🎨 DISEÑO SINCRONIZADO CON EL SISTEMA */
+        * { box-sizing: border-box; }
+        
+        body { 
+            font-family: 'Segoe UI', sans-serif; 
+            background-color: #2c3e50; /* Azul Oscuro */
+            margin: 0; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            height: 100vh; 
+            color: #333;
+        }
 
-    :root {
-      --color-fondo: #2c3e50; 
-      --color-primario: #34495e;
-      --color-acento: #2ecc71;
-      --color-texto: #333;
-    }
-    
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      background-color: var(--color-fondo);
-      color: var(--color-texto);
-      margin: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      padding: 15px;
-      overflow: hidden;
-    }
+        .container { 
+            background: white; 
+            padding: 30px; 
+            border-radius: 25px; 
+            box-shadow: 0 15px 35px rgba(0,0,0,0.5); 
+            text-align: center; 
+            width: 90%; 
+            max-width: 450px; 
+            position: relative;
+        }
 
-    .kiosko-container {
-      width: 100%;
-      max-width: 700px;
-      background: #ffffff;
-      padding: 30px;
-      border-radius: 20px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.3); 
-      text-align: center;
-      position: relative;
-    }
+        .settings-icon { 
+            position: absolute; top: 15px; right: 15px; 
+            cursor: pointer; opacity: 0.15; font-size: 1.2rem; 
+        }
 
-    h1 { color: var(--color-primario); font-size: 3rem; margin: 0 0 10px 0; font-weight: 800; }
-    .instruccion { font-size: 1.4rem; color: #7f8c8d; margin: 0 0 30px 0; }
+        h1 { color: #2c3e50; margin-bottom: 20px; font-size: 1.6rem; font-weight: 800; }
 
-    /* Contenedor del Input corregido */
-    .input-wrapper {
-      width: 100%;
-      margin-bottom: 20px;
-    }
+        input { 
+            width: 100%; padding: 15px; border: 2px solid #dfe6e9; 
+            border-radius: 12px; font-size: 1.3rem; text-align: center;
+            outline: none; transition: border-color 0.3s;
+            background-color: #f8f9fa;
+        }
+        input:focus { border-color: #2980b9; background-color: #fff; }
 
-    input[type="text"] {
-      width: 100%;
-      padding: 20px;
-      font-size: 1.8rem;
-      text-align: center;
-      border: 3px solid #dfe6e9;
-      border-radius: 12px;
-      outline: none;
-      background-color: #fafafa;
-      display: block;
-    }
+        .resultado { margin-top: 25px; min-height: 160px; display: flex; flex-direction: column; justify-content: center; }
+        
+        .nombre-prod { font-size: 1.6rem; font-weight: bold; color: #2c3e50; margin: 5px 0; line-height: 1.2; }
+        .pres-prod { font-size: 1.1rem; color: #7f8c8d; margin-bottom: 10px; }
+        
+        /* EL PRECIO: Color Verde Éxito */
+        .precio-prod { 
+            font-size: 3.8rem; 
+            font-weight: 900; 
+            color: #2ecc71; 
+            margin: 5px 0;
+            letter-spacing: -1px;
+        }
 
-    .btn-principal {
-      width: 100%;
-      padding: 22px;
-      font-size: 1.8rem;
-      background-color: #2980b9; 
-      color: white;
-      border: none;
-      border-radius: 12px;
-      cursor: pointer;
-      font-weight: bold;
-    }
+        .error { color: #e74c3c; font-weight: bold; font-size: 1.2rem; }
+        .instruccion { color: #95a5a6; font-size: 0.9rem; margin-top: 10px; }
 
-    .display-precio {
-      padding: 60px 20px; 
-      background: #f1f2f6;
-      border-radius: 15px;
-      display: none; 
-      animation: fadeIn 0.3s ease-in-out;
-    }
-
-    .nombre-producto { font-size: 2.5rem; color: var(--color-primario); font-weight: 700; margin: 0; }
-    .presentacion-producto { font-size: 1.6rem; color: #7f8c8d; margin: 5px 0; }
-    .precio-producto { font-size: 9.5rem; color: var(--color-acento); font-weight: 800; margin: 10px 0; }
-
-    .contenedor-coincidencias {
-      display: none;
-      text-align: left;
-      overflow-y: auto;
-      max-height: 50vh;
-      margin-bottom: 20px;
-    }
-
-    .item-coincidencia {
-      background: #fafafa;
-      padding: 18px;
-      margin-bottom: 12px;
-      border-radius: 12px;
-      border: 2px solid #eee;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      cursor: pointer;
-    }
-
-    .settings-icon {
-      position: absolute; top: 15px; right: 15px;
-      background: transparent; border: none; opacity: 0.2; cursor: pointer; font-size: 1.5rem;
-    }
-
-    .oculto { display: none !important; }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-  </style>
+        @media (max-width: 400px) {
+            .precio-prod { font-size: 3rem; }
+            h1 { font-size: 1.3rem; }
+        }
+    </style>
 </head>
 <body>
 
-  <div class="kiosko-container">
-    <button class="settings-icon" onclick="configurarCSV()">⚙️</button>
-    
-    <div id="pantallaCaptura">
-      <h1>Verificador</h1>
-      <p class="instruccion">Escanea o escribe el nombre del producto</p>
-      
-      <div class="input-wrapper">
-        <input type="text" id="lectorEntrada" placeholder="Buscando..." autofocus>
-      </div>
-      
-      <button class="btn-principal" onclick="accionVerificar()">Consultar Precio</button>
-    </div>
-    
-    <div id="pantallaCoincidencias" class="contenedor-coincidencias">
-      <p style="font-weight: bold; text-align: center;">Toca tu producto:</p>
-      <div id="listaCoincidencias"></div>
-    </div>
-    
-    <div id="pantallaResultado" class="display-precio"></div>
-    
-    <button id="btnVolver" class="oculto btn-principal" onclick="restablecerPantalla()" style="background-color: #7f8c8d; margin-top: 20px;">🔍 Nueva Consulta</button>
-  </div>
-
-  <script>
-    // 🧪 PRODUCTOS DE PRUEBA
-    const productosPrueba = {
-        "111": { nombre: "Leche Entera", presentacion: "1 Litro", precio: 22.50 },
-        "222": { nombre: "Huevo Blanco", presentacion: "1 Kg (16 pzas)", precio: 45.00 },
-        "333": { nombre: "Aceite de Cocina", presentacion: "900 ml", precio: 38.00 },
-        "444": { nombre: "Coca Cola", presentacion: "600 ml", precio: 18.00 }
-    };
-
-    let productosRegistrados = {};
-    let temporizadorRegreso = null;
-
-    document.addEventListener('DOMContentLoaded', () => {
-        inicializarApp();
-    });
-
-    function configurarCSV() {
-        const url = prompt("Enlace CSV de Google Sheets:", localStorage.getItem('csv_master_url') || "");
-        if (url !== null) {
-            localStorage.setItem('csv_master_url', url);
-            location.reload();
-        }
-    }
-
-    async function inicializarApp() {
-        const urlCSV = localStorage.getItem('csv_master_url');
+    <div class="container">
+        <div class="settings-icon" onclick="configurarCSV()">⚙️</div>
+        <h1>Verificador de Precios</h1>
         
-        // Si no hay URL, cargamos los de prueba de inmediato
-        if (!urlCSV) {
-            productosRegistrados = productosPrueba;
-            console.log("Usando productos de prueba.");
-            return;
-        }
+        <input type="text" id="buscador" placeholder="Escanea el código..." autofocus onkeydown="if(event.key==='Enter') buscarProducto()">
 
-        try {
-            const res = await fetch(urlCSV);
-            const data = await res.text();
-            const filas = data.split(/\r?\n/).filter(line => line.trim() !== "").slice(1);
-            
-            productosRegistrados = {};
-            filas.forEach(f => {
-                const c = f.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
-                if (c.length >= 5) {
-                    const cod = c[0].replace(/"/g, '').trim();
-                    productosRegistrados[cod] = { 
-                        nombre: c[1].replace(/"/g, '').trim(), 
-                        presentacion: c[2].replace(/"/g, '').trim(), 
-                        precio: parseFloat(c[4]) || 0 
-                    };
-                }
-            });
-            localStorage.setItem("backup_kiosko", JSON.stringify(productosRegistrados));
-            console.log("Base de datos sincronizada.");
-        } catch (e) {
-            console.warn("Error de conexión. Cargando respaldo o prueba.");
-            const backup = localStorage.getItem("backup_kiosko");
-            productosRegistrados = backup ? JSON.parse(backup) : productosPrueba;
-        }
-    }
+        <div id="resultado" class="resultado">
+            <p class="instruccion">Esperando escaneo...</p>
+        </div>
+    </div>
 
-    function dbConsultarProducto(busqueda) {
-        const termino = busqueda.toLowerCase().trim();
-        if (productosRegistrados[termino]) return [productosRegistrados[termino]];
+    <script>
+        let productosDB = {};
 
-        let coincidencias = [];
-        for (const cod in productosRegistrados) {
-            if (productosRegistrados[cod].nombre.toLowerCase().includes(termino)) {
-                coincidencias.push(productosRegistrados[cod]);
+        // Carga inicial de datos
+        document.addEventListener('DOMContentLoaded', cargarDatos);
+
+        function configurarCSV() {
+            const url = prompt("Pega el enlace CSV de Google Sheets:", localStorage.getItem('csv_master_url') || "");
+            if (url !== null) {
+                localStorage.setItem('csv_master_url', url);
+                location.reload();
             }
         }
-        return coincidencias;
-    }
 
-    function accionVerificar() {
-        const input = document.getElementById("lectorEntrada");
-        const busqueda = input.value.trim();
-        if (!busqueda) return;
+        async function cargarDatos() {
+            const url = localStorage.getItem('csv_master_url');
+            if (!url) {
+                document.getElementById('resultado').innerHTML = "<p class='error'>⚠️ Haz clic en el engranaje para configurar el enlace CSV.</p>";
+                return;
+            }
 
-        const resultados = dbConsultarProducto(busqueda);
-        
-        document.getElementById("pantallaCaptura").classList.add("oculto");
-        document.getElementById("btnVolver").classList.remove("oculto");
-
-        if (resultados.length === 1) {
-            mostrarPrecioGigante(resultados[0]);
-        } else if (resultados.length > 1) {
-            mostrarLista(resultados);
-        } else {
-            const res = document.getElementById("pantallaResultado");
-            res.style.display = "block";
-            res.innerHTML = `<p class="nombre-producto" style="color: #e74c3c;">❌ No encontrado</p><p>Prueba con otro código.</p>`;
+            try {
+                const res = await fetch(url);
+                const data = await res.text();
+                // Separar filas y quitar la primera (encabezados)
+                const filas = data.split(/\r?\n/).filter(f => f.trim() !== "").slice(1);
+                
+                productosDB = {};
+                filas.forEach(f => {
+                    // Split que respeta comas dentro de textos entrecomillados
+                    const c = f.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+                    
+                    if (c.length >= 5) { // Debe tener al menos hasta el Precio (Col E)
+                        const cod = c[0].replace(/"/g, '').trim();
+                        productosDB[cod] = {
+                            nombre: c[1].replace(/"/g, '').trim(),
+                            presentacion: c[2].replace(/"/g, '').trim(),
+                            // MAPEO DE 7 COLUMNAS: Precio Público es índice [4] (Columna E)
+                            precio: parseFloat(c[4].replace(/"/g, '').trim()) || 0
+                        };
+                    }
+                });
+                console.log("Base de datos cargada: ", Object.keys(productosDB).length, " productos.");
+            } catch (e) {
+                document.getElementById('resultado').innerHTML = "<p class='error'>Error al conectar con Google Sheets.</p>";
+            }
         }
-        
-        input.value = "";
-        iniciarTemporizador();
-    }
 
-    function mostrarPrecioGigante(prod) {
-        const res = document.getElementById("pantallaResultado");
-        res.style.display = "block";
-        document.getElementById("pantallaCoincidencias").style.display = "none";
-        res.innerHTML = `
-            <p class="nombre-producto">${prod.nombre}</p>
-            <p class="presentacion-producto">${prod.presentacion}</p>
-            <p class="precio-producto">$${prod.precio.toFixed(2)}</p>
-        `;
-    }
+        function buscarProducto() {
+            const input = document.getElementById('buscador');
+            const resDiv = document.getElementById('resultado');
+            const codigo = input.value.trim();
 
-    function mostrarLista(lista) {
-        const contenedor = document.getElementById("pantallaCoincidencias");
-        const listaDiv = document.getElementById("listaCoincidencias");
-        contenedor.style.display = "block";
-        listaDiv.innerHTML = "";
-        
-        lista.forEach(prod => {
-            const div = document.createElement("div");
-            div.className = "item-coincidencia";
-            div.innerHTML = `<div><b>${prod.nombre}</b><br><small>${prod.presentacion}</small></div><div>➜</div>`;
-            div.onclick = () => { mostrarPrecioGigante(prod); iniciarTemporizador(); };
-            listaDiv.appendChild(div);
-        });
-    }
+            if (productosDB[codigo]) {
+                const p = productosDB[codigo];
+                resDiv.innerHTML = `
+                    <div class="nombre-prod">${p.nombre}</div>
+                    <div class="pres-prod">${p.presentacion}</div>
+                    <div class="precio-prod">$${p.precio.toFixed(2)}</div>
+                `;
+            } else if (codigo !== "") {
+                resDiv.innerHTML = `
+                    <p class="error">❌ No encontrado</p>
+                    <p style="font-size:0.8rem; color:#95a5a6;">Código: ${codigo}</p>
+                `;
+            }
 
-    function iniciarTemporizador() {
-        if (temporizadorRegreso) clearTimeout(temporizadorRegreso);
-        temporizadorRegreso = setTimeout(restablecerPantalla, 10000); 
-    }
-
-    function restablecerPantalla() {
-        if (temporizadorRegreso) clearTimeout(temporizadorRegreso);
-        document.getElementById("pantallaResultado").style.display = "none";
-        document.getElementById("pantallaCoincidencias").style.display = "none";
-        document.getElementById("btnVolver").classList.add("oculto");
-        document.getElementById("pantallaCaptura").classList.remove("oculto");
-        document.getElementById("lectorEntrada").focus();
-    }
-
-    document.getElementById("lectorEntrada").addEventListener("keypress", (e) => {
-        if (e.key === "Enter") accionVerificar();
-    });
-  </script>
+            input.value = ""; // Limpiar para el siguiente
+            input.focus();
+        }
+    </script>
 </body>
 </html>
