@@ -3,10 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Verificador de Precios</title>
+  <title>Verificador de Precios Pro</title>
   
   <style>
-    /* 🎨 ESTILOS ENFOCADOS EN TABLETA */
     :root {
       --color-fondo: #2c3e50; 
       --color-primario: #34495e;
@@ -15,7 +14,7 @@
     }
     
     body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      font-family: 'Segoe UI', sans-serif;
       background-color: var(--color-fondo);
       color: var(--color-texto);
       margin: 0;
@@ -25,50 +24,40 @@
       justify-content: center;
       height: 100vh;
       box-sizing: border-box;
-      position: relative;
+      overflow: hidden;
     }
 
     .kiosko-container {
       width: 90%;
       max-width: 700px;
       background: #ffffff;
-      padding: 50px;
+      padding: 40px;
       border-radius: 20px;
       box-shadow: 0 10px 30px rgba(0,0,0,0.3); 
       text-align: center;
       max-height: 90vh;
       display: flex;
       flex-direction: column;
+      position: relative;
     }
 
-    h1 {
-      color: var(--color-primario);
-      font-size: 3.2rem;
-      margin: 0 0 10px 0;
-      font-weight: 800;
-    }
-
-    .instruccion {
-      font-size: 1.5rem;
-      color: #7f8c8d;
-      margin: 0 0 35px 0;
-    }
+    h1 { color: var(--color-primario); font-size: 3rem; margin: 0 0 10px 0; font-weight: 800; }
+    .instruccion { font-size: 1.4rem; color: #7f8c8d; margin: 0 0 30px 0; }
 
     input[type="text"] {
       width: 100%;
-      padding: 25px;
-      font-size: 2rem;
+      padding: 20px;
+      font-size: 1.8rem;
       text-align: center;
       border: 3px solid #dfe6e9;
       border-radius: 12px;
-      box-sizing: border-box;
       outline: none;
       background-color: #fafafa;
     }
 
-    button {
+    .btn-principal {
       width: 100%;
-      padding: 22px;
+      padding: 20px;
       font-size: 1.8rem;
       background-color: #2980b9; 
       color: white;
@@ -77,130 +66,56 @@
       margin-top: 20px;
       cursor: pointer;
       font-weight: bold;
-      flex-shrink: 0;
-      transition: background-color 0.2s;
+      transition: background 0.2s;
     }
 
-    button:hover {
-      background-color: #2471a3;
-    }
-
-    /* 🏷️ AREA DE RESULTADO GIGANTE */
     .display-precio {
-      padding: 80px 20px; 
+      padding: 60px 20px; 
       background: #f1f2f6;
       border-radius: 15px;
       display: none; 
       animation: fadeIn 0.3s ease-in-out;
     }
 
-    .nombre-producto {
-      font-size: 2.5rem;
-      color: var(--color-primario);
-      margin: 0;
-      font-weight: 700;
-    }
+    .nombre-producto { font-size: 2.5rem; color: var(--color-primario); font-weight: 700; margin: 0; }
+    .presentacion-producto { font-size: 1.6rem; color: #7f8c8d; margin: 5px 0; }
+    .precio-producto { font-size: 9.5rem; color: var(--color-acento); font-weight: 800; margin: 10px 0; }
 
-    .presentacion-producto {
-      font-size: 1.6rem;
-      color: #7f8c8d;
-      margin: 5px 0 0 0;
-      font-weight: 600;
-    }
-
-    .precio-producto {
-      font-size: 10rem; 
-      color: var(--color-acento);
-      margin: 10px 0 0 0;
-      font-weight: 800;
-    }
-
-    /* 📱 CONTENEDOR DE COINCIDENCIAS */
     .contenedor-coincidencias {
       display: none;
       text-align: left;
-      animation: fadeIn 0.3s ease-in-out;
       overflow-y: auto;
       flex-grow: 1;
-      padding-right: 10px;
       margin-bottom: 20px;
-    }
-
-    .titulo-coincidencias {
-      font-size: 1.6rem;
-      color: var(--color-primario);
-      margin: 0 0 20px 0;
-      text-align: center;
-      font-weight: bold;
+      padding-right: 5px;
     }
 
     .item-coincidencia {
       background: #fafafa;
-      padding: 20px;
-      margin-bottom: 15px;
+      padding: 18px;
+      margin-bottom: 12px;
       border-radius: 12px;
       border: 2px solid #eee;
-      cursor: pointer;
-      transition: background 0.2s, border-color 0.2s;
       display: flex;
       justify-content: space-between;
       align-items: center;
+      cursor: pointer;
     }
 
-    .item-coincidencia:hover {
-      background: #f1f2f6;
-      border-color: var(--color-primario);
-    }
-
-    .item-nombre {
-      font-size: 1.5rem;
-      font-weight: bold;
-      color: var(--color-texto);
-      margin: 0;
-    }
-
-    .item-presentacion {
-      font-size: 1.1rem;
-      color: #7f8c8d;
-      margin: 3px 0 0 0;
-    }
-
-    .item-icono {
-      font-size: 2rem;
-      color: var(--color-acento);
-    }
-
-    .no-encontrado {
-      color: #e74c3c;
-      font-size: 2rem;
-      font-weight: bold;
-      padding: 40px 0;
-    }
-
-    .oculto {
-      display: none !important;
-    }
-
-    /* 🔒 BOTÓN DE ADMINISTRADOR DISCRETO */
-    .admin-secreto {
+    .settings-icon {
       position: absolute;
       top: 15px;
       right: 15px;
-      width: 45px;
-      height: 45px;
       background: transparent;
       border: none;
+      opacity: 0.15;
       cursor: pointer;
-      margin: 0;
-      padding: 0;
-      opacity: 0.1; 
-      transition: opacity 0.3s;
       font-size: 1.5rem;
+      z-index: 10;
     }
-    
-    .admin-secreto:hover {
-      opacity: 0.8;
-    }
+
+    .settings-icon:hover { opacity: 0.8; }
+    .oculto { display: none !important; }
 
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(10px); }
@@ -208,244 +123,172 @@
     }
   </style>
 </head>
-<body onload="inicializarApp()">
-
-  <button class="admin-secreto" onclick="activarCargaOculta()">⚙️</button>
-  <input type="file" id="archivoCSVOculto" accept=".csv" class="oculto" onchange="procesarCSVOculto(this)">
+<body>
 
   <div class="kiosko-container">
-    <!-- PANTALLA 1: Captura -->
+    <button class="settings-icon" onclick="configurarCSV()">⚙️</button>
+    
     <div id="pantallaCaptura">
       <h1>Verificador</h1>
-      <p class="instruccion">Escribe el código de barras o el nombre del producto</p>
-      <input type="text" id="lectorEntrada" placeholder="Buscar aquí..." autofocus>
-      <button onclick="accionVerificar()">Consultar Precio</button>
+      <p class="instruccion">Escanea el código o escribe el nombre</p>
+      <input type="text" id="lectorEntrada" placeholder="Listo para buscar..." autofocus>
+      <button class="btn-principal" onclick="accionVerificar()">Consultar Precio</button>
     </div>
     
-    <!-- PANTALLA 2: Lista de Coincidencias -->
     <div id="pantallaCoincidencias" class="contenedor-coincidencias">
-      <p class="titulo-coincidencias">Se encontraron varios productos. Toca el tuyo:</p>
+      <p style="font-weight: bold; text-align: center; font-size: 1.2rem;">Selecciona tu producto:</p>
       <div id="listaCoincidencias"></div>
     </div>
     
-    <!-- PANTALLA 3: Salida del Precio Gigante -->
     <div id="pantallaResultado" class="display-precio"></div>
     
-    <!-- Botón para volver a buscar -->
-    <button id="btnVolver" class="oculto" onclick="restablecerPantalla()" style="background-color: #7f8c8d;">🔍 Nueva Consulta</button>
+    <button id="btnVolver" class="oculto btn-principal" onclick="restablecerPantalla()" style="background-color: #7f8c8d;">🔍 Nueva Consulta</button>
   </div>
 
   <script>
     let productosRegistrados = {};
-    let temporizadorRegreso = null; // ⚡ Variable para controlar el tiempo
+    let temporizadorRegreso = null;
 
-    /* =======================================================
-       📦 CAPA DE DATOS
-       ======================================================= */
-    function dbConsultarProducto(busqueda) {
-      const termino = busqueda.toLowerCase().trim();
-
-      if (productosRegistrados[termino]) {
-        return [productosRegistrados[termino]];
-      }
-
-      let coincidencias = [];
-      for (const codigo in productosRegistrados) {
-        const nombreProducto = productosRegistrados[codigo].nombre.toLowerCase();
-        if (nombreProducto.includes(termino)) {
-          coincidencias.push({ ...productosRegistrados[codigo], codigo: codigo });
-        }
-      }
-
-      return coincidencias;
-    }
-
-    function inicializarApp() {
-      const dbGuardada = localStorage.getItem("productos_kiosko");
-      if (dbGuardada) {
-        productosRegistrados = JSON.parse(dbGuardada);
-      } else {
-        productosRegistrados = {
-          "7501030426653": { nombre: "Pan Blanco Bimbo", presentacion: "Grande 567g", precio: 45.00 },
-          "7501000111204": { nombre: "Coca Cola Original", presentacion: "600 ml", precio: 20.00 },
-          "7501055305313": { nombre: "Coca Cola Sin Azucar", presentacion: "600 ml", precio: 20.00 },
-          "7501000632129": { nombre: "Papas Sabritas Originales", presentacion: "42 gr", precio: 18.00 }
-        };
-      }
-    }
-
-    /* =======================================================
-       🎮 CAPA DE INTERFAZ (UI)
-       ======================================================= */
-    function accionVerificar() {
-      const input = document.getElementById("lectorEntrada");
-      const display = document.getElementById("pantallaResultado");
-      const pantallaCaptura = document.getElementById("pantallaCaptura");
-      const pantallaCoincidencias = document.getElementById("pantallaCoincidencias");
-      const listaCoincidencias = document.getElementById("listaCoincidencias");
-      const btnVolver = document.getElementById("btnVolver");
-      
-      const busqueda = input.value.trim();
-      if (!busqueda) return;
-
-      const resultados = dbConsultarProducto(busqueda);
-
-      pantallaCaptura.classList.add("oculto");
-      btnVolver.classList.remove("oculto");
-
-      if (resultados.length === 1) {
-        display.style.display = "block";
-        mostrarPrecioGigante(resultados[0]);
-        iniciarTemporizador(); // ⚡ Inicia la cuenta de 10 seg
-      } else if (resultados.length > 1) {
-        pantallaCoincidencias.style.display = "block";
-        listaCoincidencias.innerHTML = "";
-        iniciarTemporizador(); // ⚡ Inicia la cuenta también en la lista
-        
-        resultados.forEach(prod => {
-          const div = document.createElement("div");
-          div.className = "item-coincidencia";
-          div.innerHTML = `
-            <div>
-              <p class="item-nombre">${prod.nombre}</p>
-              <p class="item-presentacion">${prod.presentacion || 'Sin presentación'}</p>
-            </div>
-            <div class="item-icono">➜</div>
-          `;
-          div.onclick = function() {
-            pantallaCoincidencias.style.display = "none";
-            display.style.display = "block";
-            mostrarPrecioGigante(prod);
-            iniciarTemporizador(); // ⚡ Reinicia el tiempo al tocar el producto
-          };
-          listaCoincidencias.appendChild(div);
-        });
-      } else {
-        display.style.display = "block";
-        display.innerHTML = `
-          <p class="no-encontrado">❌ No se encontró el producto</p>
-          <p style="color:#7f8c8d; margin:15px 0 0 0; font-size:1.4rem;">Intenta con el código de barras o acude con un empleado.</p>
-        `;
-        iniciarTemporizador(); // ⚡ Inicia la cuenta si no encuentra nada
-      }
-
-      input.value = "";
-    }
-
-    function mostrarPrecioGigante(producto) {
-      const display = document.getElementById("pantallaResultado");
-      display.innerHTML = `
-        <p class="nombre-producto">${producto.nombre}</p>
-        <p class="presentacion-producto">${producto.presentacion || ''}</p>
-        <p class="precio-producto">$${producto.precio.toFixed(2)}</p>
-      `;
-    }
-
-    // ⚡ FUNCIONES DEL TEMPORIZADOR
-    function iniciarTemporizador() {
-      // Si ya había un conteo corriendo, lo borramos para empezar de cero
-      if (temporizadorRegreso) {
-        clearTimeout(temporizadorRegreso);
-      }
-      
-      // Activa el regreso automático en 10,000 milisegundos (10 segundos)
-      temporizadorRegreso = setTimeout(() => {
-        restablecerPantalla();
-      }, 10000); 
-    }
-
-    function restablecerPantalla() {
-      const input = document.getElementById("lectorEntrada");
-      const display = document.getElementById("pantallaResultado");
-      const pantallaCaptura = document.getElementById("pantallaCaptura");
-      const pantallaCoincidencias = document.getElementById("pantallaCoincidencias");
-      const btnVolver = document.getElementById("btnVolver");
-
-      // ⚡ Cancela el temporizador si el usuario interactuó voluntariamente
-      if (temporizadorRegreso) {
-        clearTimeout(temporizadorRegreso);
-      }
-
-      display.style.display = "none";
-      pantallaCoincidencias.style.display = "none";
-      btnVolver.classList.add("oculto");
-      pantallaCaptura.classList.remove("oculto");
-
-      input.focus();
-    }
-
-    document.getElementById("lectorEntrada").addEventListener("keypress", function(e) {
-      if (e.key === "Enter") {
-        accionVerificar();
-      }
+    document.addEventListener('DOMContentLoaded', () => {
+        inicializarApp();
     });
 
-    /* =======================================================
-       🛡️ CAPA DE CARGA CSV OCULTA
-       ======================================================= */
-    function activarCargaOculta() {
-      document.getElementById("archivoCSVOculto").click();
+    function configurarCSV() {
+        const url = prompt("Enlace CSV de Google Sheets:", localStorage.getItem('csv_master_url') || "");
+        if (url !== null) {
+            localStorage.setItem('csv_master_url', url);
+            location.reload();
+        }
     }
 
-    function procesarCSVOculto(input) {
-      const file = input.files; 
-      if (!file || !file[0]) return;
-
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        const contenido = e.target.result;
-        const lineas = contenido.split("\n");
-        let importados = 0;
-
-        for (let i = 0; i < lineas.length; i++) {
-          let linea = lineas[i].trim();
-          
-          if (!linea || linea.startsWith("sep=") || linea.startsWith("codigo,nombre")) {
-            continue;
-          }
-
-          let columnas = [];
-          let celdaActual = '';
-          let dentroDeComillas = false;
-
-          for (let j = 0; j < linea.length; j++) {
-            let char = linea[j];
-            if (char === '"') {
-              dentroDeComillas = !dentroDeComillas;
-            } else if (char === ',' && !dentroDeComillas) {
-              columnas.push(celdaActual.trim().replace(/^"|"$/g, ''));
-              celdaActual = '';
-            } else {
-              celdaActual += char;
+    async function inicializarApp() {
+        const urlCSV = localStorage.getItem('csv_master_url');
+        
+        if (urlCSV) {
+            try {
+                const res = await fetch(urlCSV);
+                const data = await res.text();
+                // Parseo de CSV respetando comas dentro de comillas
+                const filas = data.split(/\r?\n/).filter(line => line.trim() !== "").slice(1);
+                
+                productosRegistrados = {};
+                filas.forEach(f => {
+                    const c = f.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+                    if (c.length >= 5) {
+                        const cod = c[0].replace(/"/g, '').trim();
+                        productosRegistrados[cod] = { 
+                            nombre: c[1].replace(/"/g, '').trim(), 
+                            presentacion: c[2].replace(/"/g, '').trim(), 
+                            precio: parseFloat(c[4]) || 0 
+                        };
+                    }
+                });
+                
+                // Guardamos copia de seguridad local
+                localStorage.setItem("backup_kiosko", JSON.stringify(productosRegistrados));
+                console.log("Base de datos sincronizada correctamente.");
+            } catch (e) {
+                console.warn("Error de conexión. Cargando respaldo local.");
+                cargarRespaldo();
             }
-          }
-          columnas.push(celdaActual.trim().replace(/^"|"$/g, ''));
-
-          if (columnas.length >= 4) {
-            let codigo = columnas[0];
-            let nombre = columnas[1];
-            let presentacion = columnas[2];
-            let precio = parseFloat(columnas[3]);
-
-            if (codigo && nombre && !isNaN(precio)) {
-              productosRegistrados[codigo] = { nombre: nombre, presentacion: presentacion, precio: precio };
-              importados++;
-            }
-          }
-        }
-
-        if (importados > 0) {
-          localStorage.setItem("productos_kiosko", JSON.stringify(productosRegistrados));
-          alert(`¡Éxito! Se han cargado ${importados} productos de forma discreta.`);
-          location.reload(); 
         } else {
-          alert("No se encontraron registros válidos en el archivo.");
+            cargarRespaldo();
+        }
+    }
+
+    function cargarRespaldo() {
+        const backup = localStorage.getItem("backup_kiosko");
+        if (backup) productosRegistrados = JSON.parse(backup);
+    }
+
+    function dbConsultarProducto(busqueda) {
+        const termino = busqueda.toLowerCase().trim();
+        // Buscar por código exacto
+        if (productosRegistrados[termino]) return [productosRegistrados[termino]];
+
+        // Buscar coincidencias por nombre
+        let coincidencias = [];
+        for (const cod in productosRegistrados) {
+            if (productosRegistrados[cod].nombre.toLowerCase().includes(termino)) {
+                coincidencias.push(productosRegistrados[cod]);
+            }
+        }
+        return coincidencias;
+    }
+
+    function accionVerificar() {
+        const input = document.getElementById("lectorEntrada");
+        const busqueda = input.value.trim();
+        if (!busqueda) return;
+
+        const resultados = dbConsultarProducto(busqueda);
+        
+        document.getElementById("pantallaCaptura").classList.add("oculto");
+        document.getElementById("btnVolver").classList.remove("oculto");
+
+        if (resultados.length === 1) {
+            mostrarPrecioGigante(resultados[0]);
+        } else if (resultados.length > 1) {
+            mostrarLista(resultados);
+        } else {
+            const res = document.getElementById("pantallaResultado");
+            res.style.display = "block";
+            res.innerHTML = `<p class="nombre-producto" style="color: #e74c3c;">❌ No encontrado</p><p>Verifica el código e intenta de nuevo.</p>`;
         }
         
         input.value = "";
-      };
-      reader.readAsText(file[0]);
+        iniciarTemporizador();
     }
+
+    function mostrarPrecioGigante(prod) {
+        const res = document.getElementById("pantallaResultado");
+        res.style.display = "block";
+        document.getElementById("pantallaCoincidencias").style.display = "none";
+        res.innerHTML = `
+            <p class="nombre-producto">${prod.nombre}</p>
+            <p class="presentacion-producto">${prod.presentacion}</p>
+            <p class="precio-producto">$${prod.precio.toFixed(2)}</p>
+        `;
+    }
+
+    function mostrarLista(lista) {
+        const contenedor = document.getElementById("pantallaCoincidencias");
+        const listaDiv = document.getElementById("listaCoincidencias");
+        contenedor.style.display = "block";
+        listaDiv.innerHTML = "";
+        
+        lista.forEach(prod => {
+            const div = document.createElement("div");
+            div.className = "item-coincidencia";
+            div.innerHTML = `
+                <div>
+                    <div style="font-size: 1.3rem; font-weight: bold;">${prod.nombre}</div>
+                    <div style="color: #7f8c8d;">${prod.presentacion}</div>
+                </div>
+                <div style="font-size: 1.5rem; color: var(--color-acento);">➜</div>
+            `;
+            div.onclick = () => { mostrarPrecioGigante(prod); iniciarTemporizador(); };
+            listaDiv.appendChild(div);
+        });
+    }
+
+    function iniciarTemporizador() {
+        if (temporizadorRegreso) clearTimeout(temporizadorRegreso);
+        temporizadorRegreso = setTimeout(restablecerPantalla, 10000); // 10 segundos
+    }
+
+    function restablecerPantalla() {
+        if (temporizadorRegreso) clearTimeout(temporizadorRegreso);
+        document.getElementById("pantallaResultado").style.display = "none";
+        document.getElementById("pantallaCoincidencias").style.display = "none";
+        document.getElementById("btnVolver").classList.add("oculto");
+        document.getElementById("pantallaCaptura").classList.remove("oculto");
+        document.getElementById("lectorEntrada").focus();
+    }
+
+    document.getElementById("lectorEntrada").addEventListener("keypress", (e) => {
+        if (e.key === "Enter") accionVerificar();
+    });
   </script>
 </body>
 </html>
