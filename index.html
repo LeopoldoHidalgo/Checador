@@ -334,6 +334,32 @@
     document.getElementById("lectorEntrada").addEventListener("keypress", (e) => {
       if (e.key === "Enter") accionVerificar();
     });
+
+    // --- FUNCIÓN DE ENFOQUE FORZADO ---
+
+// 1. Si el usuario hace clic en cualquier parte del fondo (body)
+document.body.addEventListener("click", () => {
+    // Solo regresa el foco si la pantalla de captura es la que está visible
+    const buscador = document.getElementById("lectorEntrada");
+    const pantallaCaptura = document.getElementById("pantallaCaptura");
+    
+    if (!pantallaCaptura.classList.contains("oculto")) {
+        buscador.focus();
+    }
+});
+
+// 2. Si el foco se pierde por cualquier otra razón (ej. presionar Tabulador)
+document.getElementById("lectorEntrada").addEventListener("blur", () => {
+    const pantallaCaptura = document.getElementById("pantallaCaptura");
+    
+    // Esperamos un instante y lo regresamos si seguimos en la pantalla principal
+    setTimeout(() => {
+        if (!pantallaCaptura.classList.contains("oculto")) {
+            document.getElementById("lectorEntrada").focus();
+        }
+    }, 100);
+});
+    
   </script>
 </body>
 </html>
