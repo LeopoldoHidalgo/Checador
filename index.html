@@ -6,13 +6,13 @@
   <title>Verificador de Precios Kiosko Pro</title>
   
   <style>
-    /* --- DISEÑO GLOBAL --- */
+    /* --- RECUPERANDO PALETA ORIGINAL --- */
     :root {
-      --color-fondo: #2c3e50;
-      --color-primario: #34495e;
-      --color-acento: #2ecc71;
+      --color-fondo: #2c3e50;      /* Gris Azulado Oscuro */
+      --color-primario: #34495e;   /* Azul Grisáceo */
+      --color-acento: #2ecc71;     /* Verde Esmeralda (Precios) */
+      --color-azul: #2980b9;       /* Azul Rey (Botones/Bordes) */
       --color-texto: #333;
-      --color-azul: #2980b9;
     }
     
     body {
@@ -20,14 +20,12 @@
       background-color: var(--color-fondo);
       margin: 0;
       display: flex;
-      flex-direction: column;
       align-items: center;
       justify-content: center;
       height: 100vh;
-      overflow: hidden; /* Evita que la pantalla se mueva */
+      overflow: hidden;
     }
 
-    /* CONTENEDOR PRINCIPAL (Estilo Tablet) */
     .kiosko-container {
       width: 95%;
       max-width: 900px;
@@ -36,28 +34,25 @@
       border-radius: 30px;
       box-shadow: 0 15px 40px rgba(0,0,0,0.4); 
       text-align: center;
-      display: flex;
-      flex-direction: column;
       box-sizing: border-box;
     }
 
     h1 { color: var(--color-primario); font-size: 3.5rem; margin: 0 0 10px 0; font-weight: 800; }
     .instruccion { font-size: 1.6rem; color: #7f8c8d; margin-bottom: 30px; }
 
-    /* --- EL BUSCADOR GIGANTE --- */
+    /* EL BUSCADOR GIGANTE ORIGINAL */
     input[type="text"] {
       width: 100%;
       padding: 30px;
-      font-size: 2.8rem; /* Texto muy grande */
+      font-size: 2.8rem;
       text-align: center;
-      border: 4px solid #3498db;
+      border: 4px solid var(--color-azul);
       border-radius: 20px;
       box-sizing: border-box;
       outline: none;
       background-color: #f9f9f9;
       color: #2c3e50;
       font-weight: bold;
-      transition: all 0.3s ease;
     }
 
     input[type="text"]:focus {
@@ -66,36 +61,7 @@
       box-shadow: 0 0 25px rgba(46, 204, 113, 0.3);
     }
 
-    /* BOTONES */
-    .btn-consulta {
-      width: 100%;
-      margin-top: 25px;
-      padding: 25px;
-      font-size: 2rem;
-      background-color: var(--color-azul);
-      color: white;
-      border: none;
-      border-radius: 20px;
-      cursor: pointer;
-      font-weight: 800;
-      text-transform: uppercase;
-    }
-
-    .btn-consulta:active { transform: scale(0.98); background-color: #1a5276; }
-
-    .btn-volver {
-      background-color: #7f8c8d;
-      margin-top: 30px;
-      width: 100%;
-      padding: 20px;
-      font-size: 1.5rem;
-      color: white;
-      border: none;
-      border-radius: 15px;
-      cursor: pointer;
-    }
-
-    /* --- PANTALLA DE RESULTADOS --- */
+    /* PANTALLA DE RESULTADOS */
     .display-precio {
       padding: 40px;
       background: #f1f2f6;
@@ -105,10 +71,9 @@
     }
 
     .nombre-producto { font-size: 3rem; color: var(--color-primario); margin: 0; font-weight: 800; }
-    .presentacion-producto { font-size: 1.8rem; color: #7f8c8d; margin: 10px 0; }
     .precio-producto { font-size: 10rem; color: var(--color-acento); margin: 20px 0 0 0; font-weight: 900; }
 
-    /* LISTA DE SUGERENCIAS */
+    /* LISTA DE COINCIDENCIAS */
     .contenedor-coincidencias {
       display: none;
       text-align: left;
@@ -128,35 +93,45 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      transition: background 0.2s;
     }
-    .item-coincidencia:hover { background: #f0f0f0; border-color: var(--color-azul); }
+    .item-coincidencia:hover { border-color: var(--color-azul); background: #f0f0f0; }
 
-    /* UTILIDADES */
+    .btn-volver {
+      background-color: #7f8c8d;
+      margin-top: 30px;
+      width: 100%;
+      padding: 20px;
+      font-size: 1.5rem;
+      color: white;
+      border: none;
+      border-radius: 15px;
+      cursor: pointer;
+    }
+
+    /* CONTROLES OCULTOS */
+    .admin-gear { position: absolute; top: 15px; right: 15px; width: 50px; height: 50px; opacity: 0.05; cursor: pointer; background: none; border: none; font-size: 24px; }
     .status-bar { position: absolute; bottom: 15px; left: 20px; font-size: 0.9rem; color: white; opacity: 0.6; }
-    .admin-gear { position: absolute; top: 15px; right: 15px; width: 50px; height: 50px; opacity: 0.05; cursor: pointer; background: none; border: none; }
-    .admin-gear:hover { opacity: 0.5; }
     .oculto { display: none !important; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
   </style>
 </head>
 <body onload="inicializarApp()">
 
-  <button class="admin-gear" onclick="configurarCSV()">⚙️</button>
+  <button class="admin-gear" onclick="document.getElementById('inputCSV').click()">⚙️</button>
+  <input type="file" id="inputCSV" style="display:none" accept=".csv" onchange="cargarArchivoLocal(event)">
   
-  <div id="statusLabel" class="status-bar">Sincronizando datos...</div>
+  <div id="statusLabel" class="status-bar">Listo para buscar</div>
 
   <div class="kiosko-container">
     
     <div id="pantallaCaptura">
       <h1>VERIFICADOR</h1>
       <p class="instruccion">Escanee el código o escriba el nombre</p>
-      <input type="text" id="lectorEntrada" placeholder="Esperando producto..." autofocus autocomplete="off">
-      <button class="btn-consulta" onclick="accionVerificar()">Consultar</button>
+      <input type="text" id="lectorEntrada" placeholder="Esperando..." autofocus autocomplete="off">
     </div>
     
     <div id="pantallaCoincidencias" class="contenedor-coincidencias">
-      <p style="text-align:center; font-weight:bold; font-size: 1.4rem;">Varios encontrados. Seleccione uno:</p>
+      <p style="text-align:center; font-weight:bold; font-size: 1.4rem;">Seleccione una opción:</p>
       <div id="listaCoincidencias"></div>
     </div>
     
@@ -169,112 +144,67 @@
     let productosRegistrados = {}; 
     let temporizadorRegreso = null;
 
-    // 1. INICIO: Carga datos al abrir la app y pone reloj de actualización
-    async function inicializarApp() {
-      const url = localStorage.getItem('csv_master_url');
-      if (!url) {
-        alert("Bienvenido. Use el engrane superior para configurar su enlace de Google Sheets.");
-        return;
-      }
-      
-      await cargarDesdeSheets(url);
-
-      // Actualizar automáticamente cada 30 minutos sin refrescar la página
-      setInterval(() => {
-        cargarDesdeSheets(url);
-      }, 1800000); 
-    }
-
-    // 2. CONFIGURACIÓN: Guarda la URL del CSV
-    function configurarCSV() {
-      const url = prompt("Pegue el enlace CSV de Google Sheets:", localStorage.getItem('csv_master_url') || "");
-      if (url) {
-        localStorage.setItem('csv_master_url', url);
-        location.reload();
+    function inicializarApp() {
+      const cache = localStorage.getItem('cache_csv_data');
+      if (cache) {
+        procesarDatosCSV(cache);
+        document.getElementById("statusLabel").innerText = "Base de datos cargada";
       }
     }
 
-    // 3. DESCARGA: Trae datos de Google o usa la memoria interna (offline)
-    async function cargarDesdeSheets(url) {
-      const statusLabel = document.getElementById("statusLabel");
-      try {
-        // Evitamos el caché de Google agregando el tiempo actual a la URL
-        const cacheBuster = url + (url.includes('?') ? '&' : '?') + "t=" + new Date().getTime();
-        
-        const res = await fetch(cacheBuster);
-        if (!res.ok) throw new Error("Error de red");
-        
-        const data = await res.text();
-        
-        // Guardamos copia de seguridad local (Persistencia offline)
-        localStorage.setItem('cache_csv_data', data);
-        
-        procesarDatosCSV(data);
-        statusLabel.innerText = "Última actualización exitosa: " + new Date().toLocaleTimeString();
-      } catch (e) {
-        const cache = localStorage.getItem('cache_csv_data');
-        if (cache) {
-          procesarDatosCSV(cache);
-          statusLabel.innerText = "Modo Offline (Cargado desde memoria local)";
-        } else {
-          statusLabel.innerText = "Error: Sin conexión y sin datos previos.";
-        }
-      }
+    function cargarArchivoLocal(event) {
+      const archivo = event.target.files[0];
+      if (!archivo) return;
+      const lector = new FileReader();
+      lector.onload = (e) => {
+        const contenido = e.target.result;
+        localStorage.setItem('cache_csv_data', contenido);
+        procesarDatosCSV(contenido);
+        document.getElementById("statusLabel").innerText = "Actualizado: " + new Date().toLocaleTimeString();
+        alert("¡Datos actualizados correctamente!");
+      };
+      lector.readAsText(archivo);
     }
 
-    // 4. PROCESAMIENTO: Convierte el texto CSV en un objeto de búsqueda
     function procesarDatosCSV(data) {
       const filas = data.split(/\r?\n/).filter(f => f.trim() !== "").slice(1);
       productosRegistrados = {};
-      
       filas.forEach(f => {
-        const c = f.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/); // RegEx para respetar comas dentro de comillas
-        if (c.length >= 6) { 
+        const c = f.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/); 
+        if (c.length >= 4) { 
           const cod = c[0].replace(/"/g, '').trim().toLowerCase();
+          let precioLimpio = c[3].replace(/"/g, '').replace('$', '').trim();
           productosRegistrados[cod] = {
             nombre: c[1].replace(/"/g, '').trim(),
-            presentacion: c[2].replace(/"/g, '').trim(),
-            precio: parseFloat(c[5].replace(/"/g, '').trim()) || 0
+            precio: parseFloat(precioLimpio) || 0
           };
         }
       });
     }
 
-    // 5. BÚSQUEDA: Busca por código exacto o por texto en el nombre
-    function buscarProducto(termino) {
-      termino = termino.toLowerCase().trim();
-      let coincidencias = [];
-
-      // Si es código de barras (exacto)
-      if (productosRegistrados[termino]) {
-        coincidencias.push(productosRegistrados[termino]);
-        return coincidencias;
-      }
-
-      // Si es búsqueda por nombre
-      for (const cod in productosRegistrados) {
-        if (productosRegistrados[cod].nombre.toLowerCase().includes(termino)) {
-          coincidencias.push(productosRegistrados[cod]);
-        }
-      }
-      return coincidencias;
-    }
-
-    // 6. ACCIÓN: Al presionar el botón o usar el escáner
     function accionVerificar() {
       const input = document.getElementById("lectorEntrada");
-      const valor = input.value.trim();
+      const valor = input.value.trim().toLowerCase();
       if (!valor) return;
 
-      const resultados = buscarProducto(valor);
-      
+      let coincidencias = [];
+      if (productosRegistrados[valor]) {
+        coincidencias.push(productosRegistrados[valor]);
+      } else {
+        for (const cod in productosRegistrados) {
+          if (productosRegistrados[cod].nombre.toLowerCase().includes(valor)) {
+            coincidencias.push(productosRegistrados[cod]);
+          }
+        }
+      }
+
       document.getElementById("pantallaCaptura").classList.add("oculto");
       document.getElementById("btnVolver").classList.remove("oculto");
 
-      if (resultados.length === 1) {
-        mostrarPrecio(resultados[0]);
-      } else if (resultados.length > 1) {
-        mostrarOpciones(resultados);
+      if (coincidencias.length === 1) {
+        mostrarPrecio(coincidencias[0]);
+      } else if (coincidencias.length > 1) {
+        mostrarOpciones(coincidencias);
       } else {
         const resDiv = document.getElementById("pantallaResultado");
         resDiv.style.display = "block";
@@ -284,13 +214,11 @@
       input.value = "";
     }
 
-    // 7. VISTAS: Dibujan el resultado en pantalla
     function mostrarPrecio(prod) {
       const resDiv = document.getElementById("pantallaResultado");
       resDiv.style.display = "block";
       resDiv.innerHTML = `
         <p class="nombre-producto">${prod.nombre}</p>
-        <p class="presentacion-producto">${prod.presentacion}</p>
         <p class="precio-producto">$${prod.precio.toFixed(2)}</p>
       `;
       iniciarAutoLimpieza();
@@ -301,11 +229,10 @@
       const listaDiv = document.getElementById("listaCoincidencias");
       pOpc.style.display = "block";
       listaDiv.innerHTML = "";
-      
-      lista.forEach(prod => {
+      lista.slice(0, 5).forEach(prod => {
         const div = document.createElement("div");
         div.className = "item-coincidencia";
-        div.innerHTML = `<div><b>${prod.nombre}</b><br><small>${prod.presentacion}</small></div> <b>$${prod.precio.toFixed(2)}</b>`;
+        div.innerHTML = `<span>${prod.nombre}</span> <b>$${prod.precio.toFixed(2)}</b>`;
         div.onclick = () => {
           pOpc.style.display = "none";
           mostrarPrecio(prod);
@@ -315,10 +242,9 @@
       iniciarAutoLimpieza();
     }
 
-    // 8. FLUJO: Temporizador para limpiar la pantalla sola
     function iniciarAutoLimpieza() {
       if (temporizadorRegreso) clearTimeout(temporizadorRegreso);
-      temporizadorRegreso = setTimeout(restablecerPantalla, 10000); // 10 segundos
+      temporizadorRegreso = setTimeout(restablecerPantalla, 8000); 
     }
 
     function restablecerPantalla() {
@@ -330,36 +256,15 @@
       document.getElementById("lectorEntrada").focus();
     }
 
-    // Soporte para teclado/escáner (Tecla Enter)
     document.getElementById("lectorEntrada").addEventListener("keypress", (e) => {
       if (e.key === "Enter") accionVerificar();
     });
 
-    // --- FUNCIÓN DE ENFOQUE FORZADO ---
-
-// 1. Si el usuario hace clic en cualquier parte del fondo (body)
-document.body.addEventListener("click", () => {
-    // Solo regresa el foco si la pantalla de captura es la que está visible
-    const buscador = document.getElementById("lectorEntrada");
-    const pantallaCaptura = document.getElementById("pantallaCaptura");
-    
-    if (!pantallaCaptura.classList.contains("oculto")) {
-        buscador.focus();
-    }
-});
-
-// 2. Si el foco se pierde por cualquier otra razón (ej. presionar Tabulador)
-document.getElementById("lectorEntrada").addEventListener("blur", () => {
-    const pantallaCaptura = document.getElementById("pantallaCaptura");
-    
-    // Esperamos un instante y lo regresamos si seguimos en la pantalla principal
-    setTimeout(() => {
-        if (!pantallaCaptura.classList.contains("oculto")) {
-            document.getElementById("lectorEntrada").focus();
-        }
-    }, 100);
-});
-    
+    document.body.addEventListener("click", () => {
+      if (!document.getElementById("pantallaCaptura").classList.contains("oculto")) {
+        document.getElementById("lectorEntrada").focus();
+      }
+    });
   </script>
 </body>
 </html>
